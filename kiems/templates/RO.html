@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RO Constituency Management Portal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #fafbfa;
+            color: #333;
+            min-height: 100vh;
+        }
+
+        .app-layout {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Sidebar Column Layout --- */
+        .sidebar {
+            background: white;
+            border-bottom: 1px solid #e2ece2;
+            padding: 16px;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .sidebar-brand-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-brand {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1b5e20;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-subtitle {
+            font-size: 12px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        .nav-links {
+            display: none;
+            list-style: none;
+            gap: 8px;
+            margin: 20px 0;
+        }
+
+        .nav-item {
+            padding: 10px 14px;
+            color: #445544;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: block;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: #e8f5e9;
+            color: #1b5e20;
+            font-weight: 600;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #e8f5e9;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .user-profile svg {
+            color: #1b5e20;
+        }
+
+        /* --- Main Content Window Layout --- */
+        .main-content {
+            flex: 1;
+            padding: 16px;
+            width: 100%;
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active-view {
+            display: block;
+        }
+
+        .page-header {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .view-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #111;
+        }
+
+        /* --- Buttons & Inputs --- */
+        .control-row {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background: #1b5e20;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #333;
+            border: 1px solid #cbdccb;
+        }
+
+        .btn-secondary:hover {
+            background: #fafbfa;
+        }
+
+        .input-field {
+            padding: 10px 12px;
+            border: 1px solid #cbdccb;
+            border-radius: 6px;
+            font-size: 14px;
+            width: 100%;
+            background: white;
+            outline: none;
+        }
+
+        /* --- Summary Cards Grid --- */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 12px 6px;
+            border-radius: 8px;
+            border: 1px solid #e1ebe1;
+            text-align: center;
+        }
+
+        .metric-label {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .metric-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1b5e20;
+        }
+
+        /* --- Card View on Mobile Screens --- */
+        .table-wrapper {
+            background: transparent;
+            border: none;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            display: none;
+        }
+
+        tbody tr {
+            display: block;
+            background: white;
+            border: 1px solid #e1ebe1;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        tbody td {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border: none;
+            font-size: 14px;
+        }
+
+        tbody td::before {
+            content: attr(data-label);
+            font-weight: 600;
+            color: #666;
+        }
+
+        tbody td.primary-cell {
+            border-bottom: 1px solid #f0f0f0;
+            padding-bottom: 10px;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        tbody td.primary-cell::before {
+            color: #1b5e20;
+        }
+
+        tfoot {
+            display: none;
+        }
+
+        /* --- Modals Framework --- */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.4);
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* ==========================================
+           DESKTOP UPGRADE VIEW (>= 768px)
+           ========================================== */
+        @media (min-width: 768px) {
+            .app-layout {
+                flex-direction: row;
+                min-height: 100vh;
+            }
+
+            .sidebar {
+                width: 260px;
+                border-bottom: none;
+                border-right: 1px solid #e2ece2;
+                flex-direction: column;
+                justify-content: flex-start;
+                align-items: flex-start;
+                position: fixed;
+                top: 0; bottom: 0; left: 0;
+                padding: 32px 24px;
+            }
+
+            .nav-links {
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .user-profile {
+                width: 100%;
+                margin-top: auto;
+                padding: 12px;
+            }
+
+            .main-content {
+                margin-left: 260px;
+                padding: 40px;
+                max-width: 1100px;
+            }
+
+            .page-header {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 32px;
+            }
+
+            .control-row {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .btn {
+                width: auto;
+                padding: 10px 20px;
+            }
+
+            .input-field {
+                width: 280px;
+            }
+
+            .summary-grid {
+                gap: 16px;
+                margin-bottom: 32px;
+            }
+
+            .metric-card {
+                padding: 20px;
+                text-align: left;
+            }
+
+            .metric-value {
+                font-size: 28px;
+            }
+
+            /* Tables Restore */
+            .table-wrapper {
+                background: white;
+                border: 1px solid #e1ebe1;
+                border-radius: 8px;
+                overflow: hidden;
+            }
+
+            thead {
+                display: table-header-group;
+            }
+
+            tfoot {
+                display: table-footer-group;
+            }
+
+            table {
+                display: table;
+            }
+
+            tbody tr {
+                display: table-row;
+                background: transparent;
+                border: none;
+                border-radius: 0;
+                padding: 0;
+                margin-bottom: 0;
+            }
+
+            tbody tr:hover {
+                background: #fbfdfb;
+            }
+
+            th, td {
+                display: table-cell;
+                padding: 14px 20px;
+                border-bottom: 1px solid #eee;
+            }
+
+            th {
+                background: #f4fbf4;
+                color: #1b5e20;
+                font-weight: 600;
+            }
+
+            tbody td::before {
+                display: none;
+            }
+
+            tbody td.primary-cell {
+                border-bottom: 1px solid #eee;
+                padding-bottom: 14px;
+                margin-bottom: 0;
+                font-weight: normal;
+            }
+
+            .totals-row {
+                background: #f4fbf4;
+                font-weight: bold;
+            }
+
+            .totals-row td {
+                border-bottom: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-layout">
+
+    <aside class="sidebar">
+        <div class="sidebar-brand-group">
+            <div class="sidebar-brand">RO Workspace</div>
+            <div class="sidebar-subtitle">{{ constituency_name|default:"Eldoret Central Constituency" }}</div>
+        </div>
+
+        <ul class="nav-links">
+            <li><a class="nav-item active" onclick="switchView('wardsView', this)">Constituency Wards</a></li>
+            <li><a class="nav-item" onclick="switchView('globalLogsView', this)">All Daily Logs</a></li>
+        </ul>
+
+        <div class="user-profile">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <span>RO: {{ request.user.username|default:"Officer Margaret" }}</span>
+        </div>
+    </aside>
+
+    <main class="main-content">
+
+        <div id="wardsView" class="view-section active-view">
+            <div class="page-header">
+                <h2 class="view-title">Ward Monitoring Control</h2>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-secondary" onclick="generateConstituencyReport()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                        Constituency Report
+                    </button>
+                    <button class="btn" onclick="openModal('wardModal')">+ Add Ward / Assign VRA</button>
+                </div>
+            </div>
+
+            <section class="summary-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Total Registered</div>
+                    <div class="metric-value" id="constReg">0</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Total Transferred</div>
+                    <div class="metric-value" id="constTrans">0</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Total Deployed Kits</div>
+                    <div class="metric-value" id="constKits">2</div>
+                </div>
+            </section>
+
+            <section class="control-row">
+                <input type="text" id="searchWardBox" class="input-field" placeholder="Search by ward name or VRA..." onkeyup="filterWardTable()">
+            </section>
+
+            <section class="table-wrapper">
+                <table id="wardTable">
+                    <thead>
+                        <tr>
+                            <th>Ward Name</th>
+                            <th>VRA Officer In-Charge</th>
+                            <th>Kits Assigned</th>
+                            <th>Registered</th>
+                            <th>Transferred</th>
+                            <th style="text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="primary-cell ward-name-cell" data-label="Ward Name">Milimani Ward Central</td>
+                            <td class="vra-cell" data-label="VRA Officer">Officer Charles</td>
+                            <td class="kit-count-cell" data-label="Kits Deployed">1</td>
+                            <td class="ward-reg-cell" data-label="Registered">59</td>
+                            <td class="ward-trans-cell" data-label="Transferred">22</td>
+                            <td style="text-align: right;"><button class="btn btn-secondary" style="padding:4px 8px; font-size:12px;" onclick="editWardInline(this)">Edit Target / VRA</button></td>
+                        </tr>
+                        <tr>
+                            <td class="primary-cell ward-name-cell" data-label="Ward Name">Huruma Outskirts</td>
+                            <td class="vra-cell" data-label="VRA Officer">Officer Beatrice</td>
+                            <td class="kit-count-cell" data-label="Kits Deployed">1</td>
+                            <td class="ward-reg-cell" data-label="Registered">40</td>
+                            <td class="ward-trans-cell" data-label="Transferred">15</td>
+                            <td style="text-align: right;"><button class="btn btn-secondary" style="padding:4px 8px; font-size:12px;" onclick="editWardInline(this)">Edit Target / VRA</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </div>
+
+        <div id="globalLogsView" class="view-section">
+            <div class="page-header">
+                <h2 class="view-title">Consolidated Field Activity Logs</h2>
+            </div>
+            <section class="control-row">
+                <input type="text" id="searchGlobalLogBox" class="input-field" placeholder="Search by venue or date..." onkeyup="filterGlobalLogsTable()">
+            </section>
+            <section class="table-wrapper">
+                <table id="globalLogTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Venue / Station</th>
+                            <th>Registered</th>
+                            <th>Transferred</th>
+                            <th>Edited</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="primary-cell log-date-cell" data-label="Date">2026-06-25</td>
+                            <td class="log-venue-cell" data-label="Venue">Milimani Primary School</td>
+                            <td>24</td>
+                            <td>8</td>
+                            <td>2</td>
+                        </tr>
+                        <tr>
+                            <td class="primary-cell log-date-cell" data-label="Date">2026-06-25</td>
+                            <td class="log-venue-cell" data-label="Venue">Town Hall Room 4</td>
+                            <td>35</td>
+                            <td>14</td>
+                            <td>5</td>
+                        </tr>
+                        <tr>
+                            <td class="primary-cell log-date-cell" data-label="Date">2026-06-24</td>
+                            <td class="log-venue-cell" data-label="Venue">Huruma Dispensary Hall</td>
+                            <td>40</td>
+                            <td>15</td>
+                            <td>1</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </div>
+
+    </main>
+</div>
+
+<div id="wardModal" class="modal">
+    <div class="modal-content">
+        <h3 style="margin-bottom: 16px;" id="wardModalTitle">Add Constituency Ward</h3>
+        <form id="wardForm">
+            <div class="form-group">
+                <label>Ward Name</label>
+                <input type="text" id="wardName" required class="input-field" placeholder="e.g. Milimani North">
+            </div>
+            <div class="form-group">
+                <label>VRA In-Charge Name</label>
+                <input type="text" id="wardVra" required class="input-field" placeholder="e.g. Officer John">
+            </div>
+            <div class="form-group">
+                <label>Kits Assigned Allocation</label>
+                <input type="number" id="wardKits" value="1" min="0" required class="input-field">
+            </div>
+            <div style="display: flex; gap: 8px; margin-top: 20px;">
+                <button type="button" class="btn" style="background:#778877; flex:1;" onclick="closeModal('wardModal')">Cancel</button>
+                <button type="submit" class="btn" style="flex: 1;">Save Ward</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    let currentWardEditRow = null;
+
+    window.addEventListener('DOMContentLoaded', () => {
+        calculateConstituencyTotals();
+    });
+
+    function switchView(viewId, element) {
+        document.querySelectorAll('.view-section').forEach(view => view.classList.remove('active-view'));
+        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+
+        document.getElementById(viewId).classList.add('active-view');
+        element.classList.add('active');
+    }
+
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+
+    function closeModal(id) {
+        document.getElementById(id).style.display = 'none';
+        if(id === 'wardModal') {
+            document.getElementById('wardForm').reset();
+            document.getElementById('wardModalTitle').innerText = "Add Constituency Ward";
+            currentWardEditRow = null;
+        }
+    }
+
+    function calculateConstituencyTotals() {
+        let rows = document.getElementById("wardTable").getElementsByTagName("tbody")[0].getElementsByTagName("tr");
+        let totalReg = 0, totalTrans = 0, totalKits = 0;
+
+        for (let i = 0; i < rows.length; i++) {
+            if (rows[i].style.display !== "none") {
+                totalReg += parseInt(rows[i].querySelector(".ward-reg-cell")?.innerText || 0);
+                totalTrans += parseInt(rows[i].querySelector(".ward-trans-cell")?.innerText || 0);
+                totalKits += parseInt(rows[i].querySelector(".kit-count-cell")?.innerText || 0);
+            }
+        }
+        document.getElementById("constReg").innerText = totalReg;
+        document.getElementById("constTrans").innerText = totalTrans;
+        document.getElementById("constKits").innerText = totalKits;
+    }
+
+    function filterWardTable() {
+        let val = document.getElementById("searchWardBox").value.toLowerCase();
+        let rows = document.getElementById("wardTable").getElementsByTagName("tbody")[0].getElementsByTagName("tr");
+        for (let i = 0; i < rows.length; i++) {
+            let wardName = rows[i].querySelector(".ward-name-cell").textContent.toLowerCase();
+            let vraName = rows[i].querySelector(".vra-cell").textContent.toLowerCase();
+            rows[i].style.display = (wardName.includes(val) || vraName.includes(val)) ? "" : "none";
+        }
+        calculateConstituencyTotals();
+    }
+
+    function filterGlobalLogsTable() {
+        let val = document.getElementById("searchGlobalLogBox").value.toLowerCase();
+        let rows = document.getElementById("globalLogTable").getElementsByTagName("tbody")[0].getElementsByTagName("tr");
+        for (let i = 0; i < rows.length; i++) {
+            let date = rows[i].querySelector(".log-date-cell").textContent.toLowerCase();
+            let venue = rows[i].querySelector(".log-venue-cell").textContent.toLowerCase();
+            rows[i].style.display = (date.includes(val) || venue.includes(val)) ? "" : "none";
+        }
+    }
+
+    // Process Ward Configuration Submit Lifecycle Interceptor
+    document.getElementById('wardForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        let name = document.getElementById('wardName').value;
+        let vra = document.getElementById('wardVra').value;
+        let kits = document.getElementById('wardKits').value;
+
+        if (currentWardEditRow) {
+            currentWardEditRow.querySelector(".ward-name-cell").innerText = name;
+            currentWardEditRow.querySelector(".vra-cell").innerText = vra;
+            currentWardEditRow.querySelector(".kit-count-cell").innerText = kits;
+        } else {
+            let tbody = document.getElementById("wardTable").getElementsByTagName("tbody")[0];
+            let row = tbody.insertRow(0);
+            row.innerHTML = `
+                <td class="primary-cell ward-name-cell" data-label="Ward Name">${name}</td>
+                <td class="vra-cell" data-label="VRA Officer">${vra}</td>
+                <td class="kit-count-cell" data-label="Kits Deployed">${kits}</td>
+                <td class="ward-reg-cell" data-label="Registered">0</td>
+                <td class="ward-trans-cell" data-label="Transferred">0</td>
+                <td style="text-align: right;"><button class="btn btn-secondary" style="padding:4px 8px; font-size:12px;" onclick="editWardInline(this)">Edit Target / VRA</button></td>
+            `;
+        }
+        closeModal('wardModal');
+        calculateConstituencyTotals();
+    });
+
+    function editWardInline(button) {
+        currentWardEditRow = button.closest("tr");
+        document.getElementById('wardModalTitle').innerText = "Edit Ward Assets / VRA";
+        document.getElementById('wardName').value = currentWardEditRow.querySelector(".ward-name-cell").innerText;
+        document.getElementById('wardVra').value = currentWardEditRow.querySelector(".vra-cell").innerText;
+        document.getElementById('wardKits').value = currentWardEditRow.querySelector(".kit-count-cell").innerText;
+        openModal('wardModal');
+    }
+
+    function generateConstituencyReport() {
+        alert("Compiling comprehensive regional logs to generate constituency data analysis export...");
+    }
+
+    document.querySelectorAll('.modal').forEach(mask => {
+        mask.addEventListener('click', function(e) { if(e.target === this) closeModal(this.id); });
+    });
+</script>
+</body>
+</html>

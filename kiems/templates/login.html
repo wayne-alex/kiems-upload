@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KIEMS Kit Upload - Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f2f2f7; /* iOS systemGroupedBackgroundColor */
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .login-wrapper {
+            width: 100%;
+            max-width: 380px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .logo-section img {
+            max-width: 110px;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #000000;
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            font-size: 15px;
+            color: #8e8e93; /* iOS secondaryLabel */
+            font-weight: 400;
+        }
+
+        /* iOS Form List Group Container */
+        .ios-form-group {
+            width: 100%;
+            background: #ffffff;
+            border-radius: 12px;
+            margin-bottom: 32px;
+            overflow: hidden;
+            border: 0.5px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            position: relative;
+            padding: 0 16px;
+            min-height: 48px;
+        }
+
+        /* Border line separator between inputs */
+        .input-row:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            left: 16px;
+            height: 0.5px;
+            background-color: #c6c6c8; /* iOS separator color */
+        }
+
+        .form-label {
+            width: 90px;
+            font-size: 16px;
+            font-weight: 500;
+            color: #000000;
+        }
+
+        .form-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            padding: 12px 0;
+            font-size: 16px;
+            font-family: inherit;
+            color: #000000;
+            background: transparent;
+        }
+
+        .form-input::placeholder {
+            color: #c4c4c6; /* iOS placeholder text color */
+        }
+
+        /* Theme Color Highlight on Interaction */
+        .input-row:focus-within .form-label {
+            color: #7fe07f; /* Accent colored text during active typing */
+        }
+
+        /* iOS Primary Button Style */
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: #90EE90; /* Retained Light Green Theme Color */
+            color: #000000; /* Dark text for perfect contrast on light green */
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 600;
+            letter-spacing: -0.4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(144, 238, 144, 0.2);
+        }
+
+        .btn-login:hover {
+            background: #7fe07f;
+        }
+
+        /* iOS-like tap state reaction */
+        .btn-login:active {
+            background: #6fd86f;
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+
+        /* Polished iOS System Red Alert Block styled cleanly */
+        .error-box {
+            background: #ffe5e5;
+            border: 0.5px solid #ffb3b3;
+            color: #ff3b30; /* iOS System Red */
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            width: 100%;
+            text-align: left;
+            font-weight: 500;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            box-shadow: 0 2px 8px rgba(255, 59, 48, 0.05);
+        }
+
+        .error-box i {
+            font-size: 16px;
+            margin-top: 1px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-wrapper">
+        <div class="logo-section" id="iebc-logo">
+             <img src="https://cvr.iebc.or.ke/images/logoiebc.png" alt="IEBC Logo">
+        </div>
+
+        <div class="header">
+            <h1 class="title">KIEMS Kit</h1>
+            <p class="subtitle">IEBC Upload System</p>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == 'error' or message.level_tag == 'error' %}
+                <div class="error-box" role="alert">
+                    <i class="bi bi-exclamation-circle-fill"></i>
+                    <div>{{ message }}</div>
+                </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" action="{% url 'login_user' %}" style="width: 100%;">
+            {% csrf_token %}
+
+            <div class="ios-form-group">
+                <div class="input-row">
+                    <label for="email" class="form-label">Email</label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        class="form-input"
+                        placeholder="name@iebc.or.ke"
+                        required
+                        autocomplete="email"
+                    />
+                </div>
+
+                <div class="input-row">
+                    <label for="password" class="form-label">Password</label>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        class="form-input"
+                        placeholder="Required"
+                        required
+                        autocomplete="current-password"
+                    />
+                </div>
+            </div>
+
+            <button type="submit" class="btn-login">Sign In</button>
+        </form>
+    </div>
+</body>
+</html>

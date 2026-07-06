@@ -1,0 +1,729 @@
+{% extends "superadmin_base.html" %}
+{% block title %}User Management | KIEMS Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Variables */
+    :root {
+        --color-primary: #90EE90;
+        --color-primary-dark: #7fe07f;
+        --color-text-primary: #000000;
+        --color-text-secondary: #3a3a3c;
+        --color-text-tertiary: #8e8e93;
+        --color-border: rgba(0, 0, 0, 0.06);
+        --color-bg: #f2f2f7;
+        --spacing-lg: 16px;
+        --spacing-xl: 20px;
+        --spacing-2xl: 24px;
+        --radius-lg: 12px;
+        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+        --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.06);
+    }
+
+    /* Header */
+    .page-header {
+        margin-bottom: var(--spacing-2xl);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .page-header h2 {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--color-text-primary);
+        margin: 0;
+    }
+
+    .page-header-subtitle {
+        font-size: 14px;
+        color: var(--color-text-tertiary);
+        margin-top: 4px;
+    }
+
+    /* Action Button */
+    .btn-primary {
+        padding: 10px 20px;
+        background: var(--color-primary);
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--color-text-primary);
+        cursor: pointer;
+        transition: all 0.25s ease;
+        box-shadow: 0 2px 6px rgba(144, 238, 144, 0.25);
+    }
+
+    .btn-primary:hover {
+        background: var(--color-primary-dark);
+        box-shadow: 0 4px 12px rgba(144, 238, 144, 0.35);
+        transform: translateY(-1px);
+    }
+
+    .btn-primary:active {
+        transform: scale(0.98);
+    }
+
+    /* Filter Section */
+    .filter-section {
+        margin-bottom: var(--spacing-2xl);
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--spacing-lg);
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .filter-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--color-text-tertiary);
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    .filter-input,
+    .filter-select {
+        padding: 10px 12px;
+        border: 0.5px solid var(--color-border);
+        border-radius: 8px;
+        font-size: 14px;
+        font-family: inherit;
+        background: white;
+        color: var(--color-text-primary);
+        transition: all 0.2s ease;
+    }
+
+    .filter-input:focus,
+    .filter-select:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 2px rgba(144, 238, 144, 0.1);
+    }
+
+    /* Table Container */
+    .table-container {
+        background: white;
+        border-radius: var(--radius-lg);
+        border: 0.5px solid var(--color-border);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+    }
+
+    /* Table */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    thead {
+        background: linear-gradient(to right, rgba(144, 238, 144, 0.05), transparent);
+        border-bottom: 0.5px solid var(--color-border);
+    }
+
+    th {
+        padding: var(--spacing-lg) var(--spacing-xl);
+        text-align: left;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--color-text-tertiary);
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    td {
+        padding: var(--spacing-lg) var(--spacing-xl);
+        border-bottom: 0.5px solid var(--color-border);
+        font-size: 14px;
+        color: var(--color-text-primary);
+    }
+
+    tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    tbody tr:hover {
+        background-color: rgba(144, 238, 144, 0.03);
+    }
+
+    /* User Info Cell */
+    .user-cell {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .user-name {
+        font-weight: 600;
+        color: var(--color-text-primary);
+    }
+
+    .user-email {
+        font-size: 12px;
+        color: var(--color-text-tertiary);
+    }
+
+    /* Role Badge */
+    .role-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 700;
+        width: fit-content;
+        text-transform: uppercase;
+        letter-spacing: 0.2px;
+    }
+
+    .role-superadmin { background: rgba(255, 59, 48, 0.15); color: #ff3b30; }
+    .role-ro { background: rgba(88, 86, 214, 0.15); color: #5856d6; }
+    .role-dro { background: rgba(144, 238, 144, 0.15); color: #2ea856; }
+    .role-vra { background: rgba(255, 149, 0, 0.15); color: #ff9500; }
+    .role-clerk { background: rgba(52, 199, 89, 0.15); color: #34c759; }
+
+    /* Status Badge */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .status-active { background: rgba(52, 199, 89, 0.15); color: #34c759; }
+    .status-inactive { background: rgba(255, 59, 48, 0.15); color: #ff3b30; }
+
+    /* Actions Cell */
+    .actions-cell {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-small {
+        padding: 6px 12px;
+        border: 0.5px solid var(--color-border);
+        background: white;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--color-text-secondary);
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-small:hover {
+        background: var(--color-bg);
+        border-color: var(--color-primary);
+        color: var(--color-text-primary);
+    }
+
+    /* Modal/Form */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(2px);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .modal-overlay.active {
+        display: flex;
+    }
+
+    .modal-content {
+        background: white;
+        border-radius: var(--radius-lg);
+        width: 90%;
+        max-width: 600px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    }
+
+    .modal-header {
+        padding: var(--spacing-xl);
+        border-bottom: 0.5px solid var(--color-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-header h3 {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--color-text-primary);
+        margin: 0;
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        color: var(--color-text-tertiary);
+        padding: 0;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
+
+    .modal-close:hover {
+        background: var(--color-bg);
+        color: var(--color-text-primary);
+    }
+
+    .modal-body {
+        padding: var(--spacing-xl);
+    }
+
+    .name-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--spacing-lg);
+    }
+
+    .form-group {
+        margin-bottom: var(--spacing-lg);
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .form-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--color-text-primary);
+    }
+
+    /* Conditional fields - hidden by default */
+    .conditional-fields {
+        display: none;
+        margin-top: var(--spacing-lg);
+        padding-top: var(--spacing-lg);
+        border-top: 1px solid var(--color-border);
+    }
+
+    .conditional-fields.visible {
+        display: block;
+    }
+
+    .modal-footer {
+        padding: var(--spacing-xl);
+        border-top: 0.5px solid var(--color-border);
+        display: flex;
+        gap: var(--spacing-lg);
+        justify-content: flex-end;
+    }
+
+    .btn-cancel {
+        padding: 10px 20px;
+        background: var(--color-bg);
+        border: 0.5px solid var(--color-border);
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--color-text-secondary);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-cancel:hover {
+        background: white;
+        border-color: var(--color-text-tertiary);
+    }
+
+    .btn-submit {
+        padding: 10px 20px;
+        background: var(--color-primary);
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--color-text-primary);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 6px rgba(144, 238, 144, 0.25);
+    }
+
+    .btn-submit:hover {
+        background: var(--color-primary-dark);
+        box-shadow: 0 4px 12px rgba(144, 238, 144, 0.35);
+    }
+
+    .empty-state {
+        padding: 48px var(--spacing-xl);
+        text-align: center;
+        color: var(--color-text-tertiary);
+    }
+
+    .empty-state-icon {
+        font-size: 48px;
+        margin-bottom: var(--spacing-lg);
+        opacity: 0.6;
+    }
+
+    @media (max-width: 768px) {
+        .page-header { flex-direction: column; align-items: flex-start; gap: var(--spacing-lg); }
+        .filter-section, .name-row { grid-template-columns: 1fr; }
+        th, td { padding: var(--spacing-md) var(--spacing-lg); font-size: 12px; }
+        .actions-cell { flex-direction: column; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>User Management</h2>
+        <p class="page-header-subtitle">Manage system users and assign roles</p>
+    </div>
+    <button class="btn-primary" onclick="openCreateModal()">+ New User</button>
+</div>
+
+{% if messages %}
+<div style="margin-bottom: var(--spacing-xl);">
+    {% for message in messages %}
+    <div style="padding: var(--spacing-md) var(--spacing-xl); border-radius: 8px; margin-bottom: 8px; font-size: 14px; font-weight: 600; background: #e2e2e7; color: #1c1c1e; {% if message.tags == 'success' %}background: rgba(52,199,89,0.15); color: #34c759;{% elif message.tags == 'error' %}background: rgba(255,59,48,0.15); color: #ff3b30;{% endif %}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="filter-section">
+    <div class="filter-group">
+        <label class="filter-label">Search by Name or Email</label>
+        <input type="text" class="filter-input" id="searchInput" placeholder="Type name or email...">
+    </div>
+    <div class="filter-group">
+        <label class="filter-label">Filter by Role</label>
+        <select class="filter-select" id="roleFilter">
+            <option value="">All Roles</option>
+            <option value="SuperAdmin">SuperAdmin</option>
+            <option value="RO">Registration Officer (RO)</option>
+            <option value="DRO">Deputy RO (DRO)</option>
+            <option value="VRA">Voter Registration Assistant (VRA)</option>
+            <option value="Clerk">Clerk</option>
+        </select>
+    </div>
+</div>
+
+<div class="table-container">
+    {% if users %}
+    <table>
+        <thead>
+            <tr>
+                <th>User Information</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Last Active</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="usersTableBody">
+            {% for user in users %}
+            <tr class="user-row" data-role="{{ user.role }}">
+                <td>
+                    <div class="user-cell">
+                        <span class="user-name">{{ user.get_full_name|default:user.username }} {% if user == request.user %}<span style="color: var(--color-text-tertiary); font-weight: normal; font-size: 12px;">(You)</span>{% endif %}</span>
+                        <span class="user-email">{{ user.email }}</span>
+                    </div>
+                </td>
+                <td>
+                    <span class="role-badge role-{{ user.role|lower }}">
+                        {{ user.get_role_display|default:user.role }}
+                    </span>
+                </td>
+                <td>
+                    <span class="status-badge {% if user.is_active %}status-active{% else %}status-inactive{% endif %}">
+                        <span>●</span>
+                        {% if user.is_active %}Active{% else %}Inactive{% endif %}
+                    </span>
+                </td>
+                <td>
+                    {% if user.last_login %}
+                        {{ user.last_login|timesince }} ago
+                    {% else %}
+                        Never
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="actions-cell">
+                        <button class="btn-small" onclick="editUser('{{ user.id }}')">Edit</button>
+                        {% if user == request.user %}
+                            <button class="btn-small" style="opacity: 0.5; cursor: not-allowed;" onclick="alert('Security protection rule: You are not permitted to deactivate yourself.');">Deactivate</button>
+                        {% else %}
+                            <a href="?toggle_status_id={{ user.id }}" class="btn-small" onclick="return confirm('Change status for {{ user.username }}?')">
+                                {% if user.is_active %}Deactivate{% else %}Activate{% endif %}
+                            </a>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">📂</div>
+        <div class="empty-state-text">No users found. Create one to get started.</div>
+    </div>
+    {% endif %}
+</div>
+
+<div class="modal-overlay" id="userModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">Create New User</h3>
+            <button class="modal-close" onclick="closeModal()">✕</button>
+        </div>
+
+        <form id="userForm" method="POST" action="">
+            {% csrf_token %}
+            <input type="hidden" name="action_type" id="formActionType" value="create_user">
+            <input type="hidden" name="user_id" id="formUserId" value="">
+
+            <div class="modal-body">
+                <div class="name-row">
+                    <div class="form-group">
+                        <label class="form-label">First Name</label>
+                        <input type="text" name="first_name" id="firstName" class="filter-input" placeholder="John" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Last Name</label>
+                        <input type="text" name="last_name" id="lastName" class="filter-input" placeholder="Doe" required>
+                    </div>
+                </div>
+
+                <div class="form-group" id="usernameFieldGroup">
+                    <label class="form-label">Username</label>
+                    <input type="text" name="username" id="username" class="filter-input" placeholder="johndoe" required>
+                    <span class="form-help">Unique system authorization login identifier.</span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" id="passwordLabel">Password</label>
+                    <input type="password" name="password" id="password" class="filter-input" placeholder="••••••••" required>
+                    <span class="form-help" id="passwordHelp">Minimum 8 characters with alphanumeric configurations.</span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" name="email" id="email" class="filter-input" placeholder="john@example.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Role</label>
+                    <select name="role" id="roleSelect" class="filter-select" required onchange="handleRoleChange()">
+                        <option value="">Select a role...</option>
+                        <option value="SuperAdmin">SuperAdmin</option>
+                        <option value="RO">Registration Officer (RO)</option>
+                        <option value="DRO">Deputy RO (DRO)</option>
+                        <option value="VRA">Voter Registration Assistant (VRA)</option>
+                        <option value="Clerk">Clerk</option>
+                    </select>
+                </div>
+
+                <div class="conditional-fields" id="conditionalFields">
+                    <div class="form-group" id="constituencyGroup" style="display:none;">
+                        <label class="form-label">Constituency Boundary</label>
+                        <select name="constituency" id="constituencySelect" class="filter-select">
+                            <option value="">Select Constituency...</option>
+                            {% for constituency in constituencies %}
+                            <option value="{{ constituency.id }}">{{ constituency.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="wardGroup" style="display:none;">
+                        <label class="form-label">Administrative Ward</label>
+                        <select name="ward" id="wardSelect" class="filter-select">
+                            <option value="">Select Ward...</option>
+                            {% for ward in wards %}
+                            <option value="{{ ward.id }}" data-constituency="{{ ward.constituency.id }}">{{ ward.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="kiemsKitGroup" style="display:none;">
+                        <label class="form-label">Assigned KIEMS Kit Code</label>
+                        <select name="kiems_kit" id="kiemsKitSelect" class="filter-select">
+                            <option value="">Select KIEMS Kit...</option>
+                            {% for kit in kiems_kits %}
+                            <option value="{{ kit.id }}" data-ward="{{ kit.ward.id }}">{{ kit.kit_code }} ({{ kit.ward.name }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" id="statusCheckboxGroup" style="margin-top: var(--spacing-lg);">
+                    <label class="form-label">
+                        <input type="checkbox" name="is_active" id="isActive" checked> User account is active and authorized
+                    </label>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn-submit" id="submitBtn">Create User</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const wardOptions = Array.from(document.querySelectorAll('#wardSelect option'));
+    const kitOptions = Array.from(document.querySelectorAll('#kiemsKitSelect option'));
+
+    function openCreateModal() {
+        document.getElementById('userModal').classList.add('active');
+        document.getElementById('modalTitle').textContent = 'Create New User';
+        document.getElementById('submitBtn').textContent = 'Create User';
+        document.getElementById('formActionType').value = 'create_user';
+        document.getElementById('formUserId').value = '';
+
+        document.getElementById('userForm').reset();
+        document.getElementById('usernameFieldGroup').style.display = 'block';
+        document.getElementById('username').setAttribute('required', 'required');
+        document.getElementById('password').setAttribute('required', 'required');
+        document.getElementById('passwordLabel').textContent = 'Password';
+        document.getElementById('passwordHelp').textContent = 'Minimum 8 characters with numbers and letters.';
+        document.getElementById('statusCheckboxGroup').style.display = 'block';
+
+        handleRoleChange();
+    }
+
+    function closeModal() {
+        document.getElementById('userModal').classList.remove('active');
+    }
+
+    function handleRoleChange() {
+        const role = document.getElementById('roleSelect').value;
+        const conditionalFields = document.getElementById('conditionalFields');
+        const constituencyGroup = document.getElementById('constituencyGroup');
+        const wardGroup = document.getElementById('wardGroup');
+        const kiemsKitGroup = document.getElementById('kiemsKitGroup');
+
+        constituencyGroup.style.display = 'none';
+        wardGroup.style.display = 'none';
+        kiemsKitGroup.style.display = 'none';
+        conditionalFields.classList.remove('visible');
+
+        if (role === 'RO' || role === 'DRO') {
+            constituencyGroup.style.display = 'block';
+            wardGroup.style.display = 'block';
+            conditionalFields.classList.add('visible');
+        } else if (role === 'VRA') {
+            wardGroup.style.display = 'block';
+            conditionalFields.classList.add('visible');
+        } else if (role === 'Clerk') {
+            wardGroup.style.display = 'block';
+            kiemsKitGroup.style.display = 'block';
+            conditionalFields.classList.add('visible');
+        }
+    }
+
+    // Filter Wards dynamically based on selected Constituency
+    document.getElementById('constituencySelect').addEventListener('change', function() {
+        const constituencyId = this.value;
+        const wardSelect = document.getElementById('wardSelect');
+        wardSelect.innerHTML = '<option value="">Select Ward...</option>';
+
+        wardOptions.forEach(option => {
+            if (!option.value || option.getAttribute('data-constituency') === constituencyId) {
+                if(option.value) wardSelect.appendChild(option.cloneNode(true));
+            }
+        });
+    });
+
+    // Filter KIEMS kits dynamically based on selected Ward
+    document.getElementById('wardSelect').addEventListener('change', function() {
+        const wardId = this.value;
+        const kitSelect = document.getElementById('kiemsKitSelect');
+        kitSelect.innerHTML = '<option value="">Select KIEMS Kit...</option>';
+
+        kitOptions.forEach(option => {
+            if (!option.value || option.getAttribute('data-ward') === wardId) {
+                if(option.value) kitSelect.appendChild(option.cloneNode(true));
+            }
+        });
+    });
+
+    // Populate Edit Modal seamlessly via Async AJAX Data Payload
+    function editUser(userId) {
+        fetch(`?action=get_user_data&user_id=${userId}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('userModal').classList.add('active');
+                document.getElementById('modalTitle').textContent = `Edit Settings: ${data.username}`;
+                document.getElementById('submitBtn').textContent = 'Save Adjustments';
+                document.getElementById('formActionType').value = 'update_user';
+                document.getElementById('formUserId').value = data.id;
+
+                document.getElementById('firstName').value = data.first_name;
+                document.getElementById('lastName').value = data.last_name;
+                document.getElementById('email').value = data.email;
+                document.getElementById('roleSelect').value = data.role;
+                document.getElementById('isActive').checked = data.is_active;
+
+                // Hide username changes to keep authorization references safe
+                document.getElementById('usernameFieldGroup').style.display = 'none';
+                document.getElementById('username').removeAttribute('required');
+
+                // Set password fields to optional parameters for edit configuration
+                document.getElementById('password').removeAttribute('required');
+                document.getElementById('passwordLabel').textContent = 'Update Password (Leave blank to keep current)';
+                document.getElementById('passwordHelp').textContent = 'Input parameters here ONLY to overwrite user passkey.';
+
+                handleRoleChange();
+
+                if(data.constituency) document.getElementById('constituencySelect').value = data.constituency;
+                if(data.ward) document.getElementById('wardSelect').value = data.ward;
+                if(data.kiems_kit) document.getElementById('kiemsKitSelect').value = data.kiems_kit;
+            })
+            .catch(err => alert('Failed to pull system user context data. Check connectivity parameters.'));
+    }
+
+    // Interactive Client Search
+    document.getElementById('searchInput').addEventListener('keyup', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        document.querySelectorAll('.user-row').forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(searchTerm) ? '' : 'none';
+        });
+    });
+
+    // Client Role filtering
+    document.getElementById('roleFilter').addEventListener('change', function(e) {
+        const selectedRole = e.target.value;
+        document.querySelectorAll('.user-row').forEach(row => {
+            const userRole = row.getAttribute('data-role');
+            row.style.display = (selectedRole === '' || userRole === selectedRole) ? '' : 'none';
+        });
+    });
+
+    document.getElementById('userModal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+</script>
+{% endblock %}

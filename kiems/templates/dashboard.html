@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KIEMS Portal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, sans-serif;
+            background-color: #f2f2f7; /* Clean, light iOS background */
+            color: #000000;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .dashboard-container {
+            width: 100%;
+            max-width: 640px; /* Centered, single-column focus layout */
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+
+        /* Minimal Header */
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 4px;
+        }
+
+        .identity-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .identity-group img {
+            width: 32px;
+            height: auto;
+        }
+
+        .title-area h1 {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .title-area p {
+            font-size: 13px;
+            color: #8e8e93;
+        }
+
+        /* Clean Native Action Button */
+        .btn-action {
+            background-color: #90EE90; /* Retained original light green */
+            color: #000000;
+            padding: 10px 16px;
+            border-radius: 20px; /* Rounded pill style */
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn-action:active {
+            transform: scale(0.97);
+            opacity: 0.85;
+        }
+
+        /* iOS Stacked List Card */
+        .ios-list-card {
+            background: #ffffff;
+            border-radius: 12px;
+            border: 0.5px solid rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+        }
+
+        .card-section-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #8e8e93;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            padding-left: 4px;
+            margin-bottom: 8px;
+        }
+
+        /* List Rows */
+        .list-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 16px;
+            position: relative;
+            background: #ffffff;
+        }
+
+        .list-row:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            left: 16px;
+            height: 0.5px;
+            background-color: #e5e5ea; /* Subtle iOS border split */
+        }
+
+        /* Typography treatments inside lines */
+        .primary-text {
+            font-size: 16px;
+            font-weight: 500;
+            color: #000000;
+        }
+
+        .secondary-text {
+            font-size: 14px;
+            color: #8e8e93;
+            margin-top: 2px;
+        }
+
+        .right-align-metrics {
+            text-align: right;
+        }
+
+        /* iOS Clean Dot Status Identifiers */
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .status-pill::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-pill.synced { color: #000000; }
+        .status-pill.synced::before { background-color: #34c759; } /* iOS Green */
+
+        .status-pill.pending { color: #ff3b30; }
+        .status-pill.pending::before { background-color: #ff3b30; } /* iOS Red */
+
+        .status-pill.neutral { color: #8e8e93; }
+        .status-pill.neutral::before { background-color: #8e8e93; }
+
+        /* Small link helper buttons */
+        .text-link {
+            font-size: 14px;
+            color: #000000;
+            text-decoration: underline;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+
+        <!-- Minimal Header -->
+        <header class="app-header">
+            <div class="identity-group">
+                <img src="https://cvr.iebc.or.ke/images/logoiebc.png" alt="IEBC Logo">
+                <div class="title-area">
+                    <h1>KIEMS Portal</h1>
+                    <p>Sync Engine View</p>
+                </div>
+            </div>
+            <button class="btn-action">+ Entry</button>
+        </header>
+
+        <!-- Block 1: Realtime Engine Status -->
+        <div>
+            <div class="card-section-title">Sync Overview</div>
+            <div class="ios-list-card">
+                <div class="list-row">
+                    <div>
+                        <div class="primary-text">Pending Background Sync</div>
+                        <div class="secondary-text">Next automated retry task in 4 min</div>
+                    </div>
+                    <div class="right-align-metrics">
+                        <span class="status-pill pending">18 entries</span>
+                    </div>
+                </div>
+                <div class="list-row">
+                    <div>
+                        <div class="primary-text">Successful Transmissions</div>
+                        <div class="secondary-text">Sent cleanly to external endpoints</div>
+                    </div>
+                    <div class="right-align-metrics">
+                        <span class="status-pill synced">12,462</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Block 2: Live Entries Matrix -->
+        <div>
+            <div class="card-section-title">Recent System Batches</div>
+            <div class="ios-list-card">
+                <!-- Row 1 -->
+                <div class="list-row">
+                    <div>
+                        <div class="primary-text">Kit ID: 48920</div>
+                        <div class="secondary-text">Target Date: June 24, 2026</div>
+                    </div>
+                    <div class="right-align-metrics">
+                        <div class="primary-text">120 registered</div>
+                        <div class="secondary-text"><span class="status-pill pending">Queued</span></div>
+                    </div>
+                </div>
+                <!-- Row 2 -->
+                <div class="list-row">
+                    <div>
+                        <div class="primary-text">Kit ID: 11029</div>
+                        <div class="secondary-text">Target Date: June 24, 2026</div>
+                    </div>
+                    <div class="right-align-metrics">
+                        <div class="primary-text">450 registered</div>
+                        <div class="secondary-text"><span class="status-pill synced">Synced</span></div>
+                    </div>
+                </div>
+                <!-- Row 3 -->
+                <div class="list-row">
+                    <div>
+                        <div class="primary-text">Kit ID: 33401</div>
+                        <div class="secondary-text">Target Date: June 23, 2026</div>
+                    </div>
+                    <div class="right-align-metrics">
+                        <div class="primary-text">231 registered</div>
+                        <div class="secondary-text"><button class="text-link">Retry Failed</button></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Block 3: Simple Audit Section -->
+        <div>
+            <div class="card-section-title">Latest Changes Log</div>
+            <div class="ios-list-card">
+                <div class="list-row">
+                    <div>
+                        <div class="primary-text">Entry updated via staff panel</div>
+                        <div class="secondary-text">admin_user changed registrations from 100 → 120</div>
+                    </div>
+                    <div class="right-align-metrics">
+                        <div class="secondary-text">09:51 AM</div>
+                    </div>
+                </div>
+                <div class="list-row">
+                    <div>
+                        <div class="primary-text">System values modified</div>
+                        <div class="secondary-text">staff_clerk_1 changed voted total from 410 → 412</div>
+                    </div>
+                    <div class="right-align-metrics">
+                        <div class="secondary-text">08:14 AM</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

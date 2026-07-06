@@ -1,0 +1,142 @@
+{% extends 'clerk_base.html' %}
+{% block content %}
+ <main class="main-content">
+            <div class="page-header">
+                <h1 class="kit-title">Kit: {{ assigned_kit.kit_code|default:"KT-001-TURBO" }}</h1>
+                <p class="kit-subtitle">{{ assigned_kit.ward.name|default:"Turbo Ward 1" }} • {{ assigned_kit.constituency.name|default:"Turbo" }}</p>
+            </div>
+
+            <div class="metric-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Total Registered</div>
+                    <div class="metric-value" id="topReg">0</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Total Transferred</div>
+                    <div class="metric-value" id="topTrans">0</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Total Updated</div>
+                    <div class="metric-value" id="topEdits">0</div>
+                </div>
+            </div>
+
+            <div class="controls-section">
+                <button class="btn-add" onclick="openModal()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Add Entry
+                </button>
+                <input type="text" id="searchBox" class="search-box" placeholder="Search by date or location..." onkeyup="filterDataLog()">
+            </div>
+
+            <div class="table-wrapper">
+                <table id="logTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Location</th>
+                            <th>Registered</th>
+                            <th>Transferred</th>
+                            <th>Updated</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr>
+                            <td class="date-cell" data-label="Date">2026-06-25</td>
+                            <td class="venue-cell" data-label="Location">Turbo Primary School</td>
+                            <td class="reg-cell" data-label="Registered">24</td>
+                            <td class="trans-cell" data-label="Transferred">8</td>
+                            <td class="edit-cell" data-label="Updated">2</td>
+                            <td data-label="Actions">
+                                <div class="action-btns">
+                                    <button class="btn-edit" onclick="editRow(this)" title="Edit">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                    </button>
+                                    <button class="btn-delete" onclick="deleteRow(this)" title="Delete">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="date-cell" data-label="Date">2026-06-24</td>
+                            <td class="venue-cell" data-label="Location">Ward Hall</td>
+                            <td class="reg-cell" data-label="Registered">35</td>
+                            <td class="trans-cell" data-label="Transferred">14</td>
+                            <td class="edit-cell" data-label="Updated">5</td>
+                            <td data-label="Actions">
+                                <div class="action-btns">
+                                    <button class="btn-edit" onclick="editRow(this)" title="Edit">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                    </button>
+                                    <button class="btn-delete" onclick="deleteRow(this)" title="Delete">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="date-cell" data-label="Date">2026-06-23</td>
+                            <td class="venue-cell" data-label="Location">Community Center</td>
+                            <td class="reg-cell" data-label="Registered">28</td>
+                            <td class="trans-cell" data-label="Transferred">10</td>
+                            <td class="edit-cell" data-label="Updated">3</td>
+                            <td data-label="Actions">
+                                <div class="action-btns">
+                                    <button class="btn-edit" onclick="editRow(this)" title="Edit">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                    </button>
+                                    <button class="btn-delete" onclick="deleteRow(this)" title="Delete">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="date-cell" data-label="Date">2026-06-22</td>
+                            <td class="venue-cell" data-label="Location">Town Council</td>
+                            <td class="reg-cell" data-label="Registered">42</td>
+                            <td class="trans-cell" data-label="Transferred">12</td>
+                            <td class="edit-cell" data-label="Updated">6</td>
+                            <td data-label="Actions">
+                                <div class="action-btns">
+                                    <button class="btn-edit" onclick="editRow(this)" title="Edit">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                    </button>
+                                    <button class="btn-delete" onclick="deleteRow(this)" title="Delete">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="date-cell" data-label="Date">2026-06-21</td>
+                            <td class="venue-cell" data-label="Location">District Office</td>
+                            <td class="reg-cell" data-label="Registered">31</td>
+                            <td class="trans-cell" data-label="Transferred">9</td>
+                            <td class="edit-cell" data-label="Updated">4</td>
+                            <td data-label="Actions">
+                                <div class="action-btns">
+                                    <button class="btn-edit" onclick="editRow(this)" title="Edit">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                    </button>
+                                    <button class="btn-delete" onclick="deleteRow(this)" title="Delete">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="pagination-controls">
+                    <span class="pagination-info">Showing <span id="showingCount">5</span> of <span id="totalCount">5</span></span>
+                    <button class="btn-viewmore" id="viewmoreBtn" onclick="loadMoreRows()">View More</button>
+                </div>
+            </div>
+        </main>
+{% endblock %}

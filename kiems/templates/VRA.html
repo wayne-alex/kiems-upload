@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VRA Ward Management Portal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #fafbfa;
+            color: #333;
+            min-height: 100vh;
+        }
+
+        .app-layout {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Sidebar Layout (Mobile Top Bar / Desktop Sticky Left Column) --- */
+        .sidebar {
+            background: white;
+            border-bottom: 1px solid #e2ece2;
+            padding: 16px;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .sidebar-brand-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-brand {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2e7d32;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-subtitle {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .nav-links {
+            display: none;
+            list-style: none;
+            gap: 8px;
+            margin: 20px 0;
+        }
+
+        .nav-item {
+            padding: 10px 14px;
+            color: #445544;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: block;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: #f0fbf0;
+            color: #2e7d32;
+            font-weight: 600;
+        }
+
+        .clerk-profile {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f0fbf0;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .clerk-profile svg {
+            color: #2e7d32;
+        }
+
+        /* --- Main Content Area --- */
+        .main-content {
+            flex: 1;
+            padding: 16px;
+            width: 100%;
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active-view {
+            display: block;
+        }
+
+        .page-header {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .kit-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #111;
+        }
+
+        /* --- Action Buttons & Form Controls --- */
+        .control-row {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background: #2e7d32;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #333;
+            border: 1px solid #cbdccb;
+        }
+
+        .btn-secondary:hover {
+            background: #fafbfa;
+        }
+
+        .input-field {
+            padding: 10px 12px;
+            border: 1px solid #cbdccb;
+            border-radius: 6px;
+            font-size: 14px;
+            width: 100%;
+            background: white;
+            outline: none;
+        }
+
+        .input-field:focus {
+            border-color: #2e7d32;
+        }
+
+        /* --- Summary Cards Layout --- */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 12px 6px;
+            border-radius: 8px;
+            border: 1px solid #e1ebe1;
+            text-align: center;
+        }
+
+        .metric-label {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .metric-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2e7d32;
+        }
+
+        /* --- Card View on Mobile --- */
+        .table-wrapper {
+            background: transparent;
+            border: none;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            display: none;
+        }
+
+        tbody tr {
+            display: block;
+            background: white;
+            border: 1px solid #e1ebe1;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        tbody td {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border: none;
+            font-size: 14px;
+        }
+
+        tbody td::before {
+            content: attr(data-label);
+            font-weight: 600;
+            color: #666;
+        }
+
+        tbody td.primary-cell {
+            border-bottom: 1px solid #f0f0f0;
+            padding-bottom: 10px;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        tbody td.primary-cell::before {
+            color: #2e7d32;
+        }
+
+        tfoot {
+            display: none;
+        }
+
+        /* --- Modal Box Styling --- */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.4);
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* ==========================================
+           DESKTOP UPGRADE QUERY (>= 768px)
+           ========================================== */
+        @media (min-width: 768px) {
+            .app-layout {
+                flex-direction: row;
+                min-height: 100vh;
+            }
+
+            .sidebar {
+                width: 260px;
+                border-bottom: none;
+                border-right: 1px solid #e2ece2;
+                flex-direction: column;
+                justify-content: flex-start;
+                align-items: flex-start;
+                position: fixed;
+                top: 0; bottom: 0; left: 0;
+                padding: 32px 24px;
+            }
+
+            .nav-links {
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .clerk-profile {
+                width: 100%;
+                margin-top: auto;
+                padding: 12px;
+            }
+
+            .main-content {
+                margin-left: 260px;
+                padding: 40px;
+                max-width: 1100px;
+            }
+
+            .page-header {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 32px;
+            }
+
+            .control-row {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .btn {
+                width: auto;
+                padding: 10px 20px;
+            }
+
+            .input-field {
+                width: 280px;
+            }
+
+            .summary-grid {
+                gap: 16px;
+                margin-bottom: 32px;
+            }
+
+            .metric-card {
+                padding: 20px;
+                text-align: left;
+            }
+
+            .metric-value {
+                font-size: 28px;
+            }
+
+            /* Desktop Standard Tables Layout */
+            .table-wrapper {
+                background: white;
+                border: 1px solid #e1ebe1;
+                border-radius: 8px;
+                overflow: hidden;
+            }
+
+            thead {
+                display: table-header-group;
+            }
+
+            tfoot {
+                display: table-footer-group;
+            }
+
+            table {
+                display: table;
+            }
+
+            tbody tr {
+                display: table-row;
+                background: transparent;
+                border: none;
+                border-radius: 0;
+                padding: 0;
+                margin-bottom: 0;
+            }
+
+            tbody tr:hover {
+                background: #fbfdfb;
+            }
+
+            th, td {
+                display: table-cell;
+                padding: 14px 20px;
+                border-bottom: 1px solid #eee;
+            }
+
+            th {
+                background: #f4fbf4;
+                color: #2e7d32;
+                font-weight: 600;
+            }
+
+            tbody td::before {
+                display: none;
+            }
+
+            tbody td.primary-cell {
+                border-bottom: 1px solid #eee;
+                padding-bottom: 14px;
+                margin-bottom: 0;
+                font-weight: normal;
+            }
+
+            .totals-row {
+                background: #f4fbf4;
+                font-weight: bold;
+            }
+
+            .totals-row td {
+                border-bottom: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-layout">
+
+    <aside class="sidebar">
+        <div class="sidebar-brand-group">
+            <div class="sidebar-brand">VRA Workspace</div>
+            <div class="sidebar-subtitle">{{ ward_name|default:"Milimani Ward Central" }}</div>
+        </div>
+
+        <ul class="nav-links">
+            <li><a class="nav-item active" onclick="switchView('logsView', this)">Daily Activity Logs</a></li>
+            <li><a class="nav-item" onclick="switchView('clerksView', this)">Manage Ward Clerks</a></li>
+        </ul>
+
+        <div class="clerk-profile">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <span>VRA: {{ request.user.username|default:"Officer Charles" }}</span>
+        </div>
+    </aside>
+
+    <main class="main-content">
+
+        <div id="logsView" class="view-section active-view">
+            <div class="page-header">
+                <h2 class="kit-title">Ward Statistics Ledger</h2>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-secondary" onclick="generateWardReport()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                        Ward Level Report
+                    </button>
+                    <button class="btn" onclick="openModal('entryModal')">+ Fill Today Entry</button>
+                </div>
+            </div>
+
+            <section class="summary-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Total Registered</div>
+                    <div class="metric-value" id="topReg">0</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Total Transferred</div>
+                    <div class="metric-value" id="topTrans">0</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Total Edited</div>
+                    <div class="metric-value" id="topEdits">0</div>
+                </div>
+            </section>
+
+            <section class="control-row">
+                <input type="text" id="searchLogBox" class="input-field" placeholder="Search date or venue..." onkeyup="filterLogTable()">
+            </section>
+
+            <section class="table-wrapper">
+                <table id="logTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Venue / Station</th>
+                            <th>Registered</th>
+                            <th>Transferred</th>
+                            <th>Edited</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="primary-cell" data-label="Date">2026-06-25</td>
+                            <td class="venue-cell" data-label="Venue">Milimani Primary School</td>
+                            <td class="reg-cell" data-label="Registered">24</td>
+                            <td class="trans-cell" data-label="Transferred">8</td>
+                            <td class="edit-cell" data-label="Edited">2</td>
+                        </tr>
+                        <tr>
+                            <td class="primary-cell" data-label="Date">2026-06-25</td>
+                            <td class="venue-cell" data-label="Venue">Town Hall Room 4</td>
+                            <td class="reg-cell" data-label="Registered">35</td>
+                            <td class="trans-cell" data-label="Transferred">14</td>
+                            <td class="edit-cell" data-label="Edited">5</td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr class="totals-row">
+                            <td>Ward Totals</td>
+                            <td>--</td>
+                            <td id="footReg">0</td>
+                            <td id="footTrans">0</td>
+                            <td id="footEdits">0</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </section>
+        </div>
+
+        <div id="clerksView" class="view-section">
+            <div class="page-header">
+                <h2 class="kit-title">Ward Registration Clerks</h2>
+                <button class="btn" onclick="openModal('clerkModal')">+ Add New Clerk</button>
+            </div>
+
+            <section class="control-row">
+                <input type="text" id="searchClerkBox" class="input-field" placeholder="Search clerks or kit codes..." onkeyup="filterClerkTable()">
+            </section>
+
+            <section class="table-wrapper">
+                <table id="clerkTable">
+                    <thead>
+                        <tr>
+                            <th>Clerk Name</th>
+                            <th>Assigned KIEMS Kit</th>
+                            <th>Contact Phone</th>
+                            <th>Status</th>
+                            <th style="text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="primary-cell clerk-name-cell" data-label="Clerk Name">Alice Kamau</td>
+                            <td class="kit-cell" data-label="Assigned Kit">BOM-KIT-7429</td>
+                            <td data-label="Contact">+254 711 000 111</td>
+                            <td data-label="Status" style="color: green; font-weight: 600;">Active</td>
+                            <td style="text-align: right;"><button class="btn btn-secondary" style="padding:4px 8px; font-size:12px;" onclick="editClerkInline(this)">Assign Kit / Edit</button></td>
+                        </tr>
+                        <tr>
+                            <td class="primary-cell clerk-name-cell" data-label="Clerk Name">David Kiprop</td>
+                            <td class="kit-cell" data-label="Assigned Kit">BOM-KIT-1104</td>
+                            <td data-label="Contact">+254 722 333 444</td>
+                            <td data-label="Status" style="color: green; font-weight: 600;">Active</td>
+                            <td style="text-align: right;"><button class="btn btn-secondary" style="padding:4px 8px; font-size:12px;" onclick="editClerkInline(this)">Assign Kit / Edit</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </div>
+
+    </main>
+</div>
+
+<div id="entryModal" class="modal">
+    <div class="modal-content">
+        <h3 style="margin-bottom: 16px;">Record Daily Venue Log</h3>
+        <form id="logForm">
+            <div class="form-group">
+                <label>Date</label>
+                <input type="date" id="formDate" required class="input-field">
+            </div>
+            <div class="form-group">
+                <label>Venue / Station Site</label>
+                <input type="text" id="formVenue" required class="input-field" placeholder="e.g. Social Hall Clinic">
+            </div>
+            <div class="form-group">
+                <label>Registered</label>
+                <input type="number" id="formReg" value="0" min="0" required class="input-field">
+            </div>
+            <div class="form-group">
+                <label>Transferred</label>
+                <input type="number" id="formTrans" value="0" min="0" required class="input-field">
+            </div>
+            <div class="form-group">
+                <label>Edited</label>
+                <input type="number" id="formEdit" value="0" min="0" required class="input-field">
+            </div>
+            <div style="display: flex; gap: 8px; margin-top: 20px;">
+                <button type="button" class="btn" style="background:#778877; flex:1;" onclick="closeModal('entryModal')">Cancel</button>
+                <button type="submit" class="btn" style="flex: 1;">Save Log</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="clerkModal" class="modal">
+    <div class="modal-content">
+        <h3 style="margin-bottom: 16px;" id="clerkModalTitle">Add Ward Clerk</h3>
+        <form id="clerkForm">
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="clerkName" required class="input-field" placeholder="e.g. Jane Doe">
+            </div>
+            <div class="form-group">
+                <label>Assign KIEMS Kit ID</label>
+                <input type="text" id="clerkKit" required class="input-field" placeholder="e.g. BOM-KIT-0000">
+            </div>
+            <div class="form-group">
+                <label>Phone Contact</label>
+                <input type="text" id="clerkPhone" required class="input-field" placeholder="e.g. +254...">
+            </div>
+            <div style="display: flex; gap: 8px; margin-top: 20px;">
+                <button type="button" class="btn" style="background:#778877; flex:1;" onclick="closeModal('clerkModal')">Cancel</button>
+                <button type="submit" class="btn" style="flex: 1;">Save Clerk</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    let currentEditRow = null;
+
+    window.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('formDate').value = new Date().toISOString().split('T')[0];
+        calculateLogTotals();
+    });
+
+    function switchView(viewId, element) {
+        document.querySelectorAll('.view-section').forEach(view => view.classList.remove('active-view'));
+        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+
+        document.getElementById(viewId).classList.add('active-view');
+        element.classList.add('active');
+    }
+
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+
+    function closeModal(id) {
+        document.getElementById(id).style.display = 'none';
+        if(id === 'clerkModal') {
+            document.getElementById('clerkForm').reset();
+            document.getElementById('clerkModalTitle').innerText = "Add Ward Clerk";
+            currentEditRow = null;
+        }
+    }
+
+    function calculateLogTotals() {
+        let rows = document.getElementById("logTable").getElementsByTagName("tbody")[0].getElementsByTagName("tr");
+        let reg = 0, trans = 0, edit = 0;
+
+        for (let i = 0; i < rows.length; i++) {
+            if (rows[i].style.display !== "none") {
+                reg += parseInt(rows[i].querySelector(".reg-cell")?.innerText || 0);
+                trans += parseInt(rows[i].querySelector(".trans-cell")?.innerText || 0);
+                edit += parseInt(rows[i].querySelector(".edit-cell")?.innerText || 0);
+            }
+        }
+        document.getElementById("topReg").innerText = reg;
+        document.getElementById("topTrans").innerText = trans;
+        document.getElementById("topEdits").innerText = edit;
+        document.getElementById("footReg").innerText = reg;
+        document.getElementById("footTrans").innerText = trans;
+        document.getElementById("footEdits").innerText = edit;
+    }
+
+    function filterLogTable() {
+        let val = document.getElementById("searchLogBox").value.toLowerCase();
+        let rows = document.getElementById("logTable").getElementsByTagName("tbody")[0].getElementsByTagName("tr");
+        for (let i = 0; i < rows.length; i++) {
+            let date = rows[i].querySelector(".primary-cell").textContent.toLowerCase();
+            let venue = rows[i].querySelector(".venue-cell").textContent.toLowerCase();
+            rows[i].style.display = (date.includes(val) || venue.includes(val)) ? "" : "none";
+        }
+        calculateLogTotals();
+    }
+
+    function filterClerkTable() {
+        let val = document.getElementById("searchClerkBox").value.toLowerCase();
+        let rows = document.getElementById("clerkTable").getElementsByTagName("tbody")[0].getElementsByTagName("tr");
+        for (let i = 0; i < rows.length; i++) {
+            let name = rows[i].querySelector(".clerk-name-cell").textContent.toLowerCase();
+            let kit = rows[i].querySelector(".kit-cell").textContent.toLowerCase();
+            rows[i].style.display = (name.includes(val) || kit.includes(val)) ? "" : "none";
+        }
+    }
+
+    // Handles live entry additions
+    document.getElementById('logForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        let date = document.getElementById('formDate').value;
+        let venue = document.getElementById('formVenue').value;
+        let reg = document.getElementById('formReg').value;
+        let trans = document.getElementById('formTrans').value;
+        let edit = document.getElementById('formEdit').value;
+
+        let tbody = document.getElementById("logTable").getElementsByTagName("tbody")[0];
+        let row = tbody.insertRow(0);
+        row.innerHTML = `
+            <td class="primary-cell" data-label="Date">${date}</td>
+            <td class="venue-cell" data-label="Venue">${venue}</td>
+            <td class="reg-cell" data-label="Registered">${reg}</td>
+            <td class="trans-cell" data-label="Transferred">${trans}</td>
+            <td class="edit-cell" data-label="Edited">${edit}</td>
+        `;
+        closeModal('entryModal');
+        calculateLogTotals();
+        document.getElementById('logForm').reset();
+        document.getElementById('formDate').value = new Date().toISOString().split('T')[0];
+    });
+
+    // Handles adding and editing clerks
+    document.getElementById('clerkForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        let name = document.getElementById('clerkName').value;
+        let kit = document.getElementById('clerkKit').value;
+        let phone = document.getElementById('clerkPhone').value;
+
+        if (currentEditRow) {
+            // Edit existing row sequence
+            currentEditRow.querySelector(".clerk-name-cell").innerText = name;
+            currentEditRow.querySelector(".kit-cell").innerText = kit;
+            currentEditRow.getElementsByTagName("td")[2].innerText = phone;
+        } else {
+            // New row logic setup
+            let tbody = document.getElementById("clerkTable").getElementsByTagName("tbody")[0];
+            let row = tbody.insertRow(0);
+            row.innerHTML = `
+                <td class="primary-cell clerk-name-cell" data-label="Clerk Name">${name}</td>
+                <td class="kit-cell" data-label="Assigned Kit">${kit}</td>
+                <td data-label="Contact">${phone}</td>
+                <td data-label="Status" style="color: green; font-weight: 600;">Active</td>
+                <td style="text-align: right;"><button class="btn btn-secondary" style="padding:4px 8px; font-size:12px;" onclick="editClerkInline(this)">Assign Kit / Edit</button></td>
+            `;
+        }
+        closeModal('clerkModal');
+    });
+
+    function editClerkInline(button) {
+        currentEditRow = button.closest("tr");
+        document.getElementById('clerkModalTitle').innerText = "Edit / Assign Clerk Kit";
+        document.getElementById('clerkName').value = currentEditRow.querySelector(".clerk-name-cell").innerText;
+        document.getElementById('clerkKit').value = currentEditRow.querySelector(".kit-cell").innerText;
+        document.getElementById('clerkPhone').value = currentEditRow.getElementsByTagName("td")[2].innerText;
+        openModal('clerkModal');
+    }
+
+    function generateWardReport() {
+        alert("Generating full summary report for " + document.querySelector('.sidebar-subtitle').innerText + "...");
+    }
+
+    document.querySelectorAll('.modal').forEach(mask => {
+        mask.addEventListener('click', function(e) { if(e.target === this) closeModal(this.id); });
+    });
+</script>
+</body>
+</html>

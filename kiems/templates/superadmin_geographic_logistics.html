@@ -1,0 +1,671 @@
+{% extends "superadmin_base.html" %}
+{% block title %}Geographic Logistics Management | KIEMS Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Design System */
+    :root {
+        --color-primary: #90EE90;
+        --color-primary-dark: #7fe07f;
+        --color-text-primary: #000000;
+        --color-text-secondary: #3a3a3c;
+        --color-text-tertiary: #8e8e93;
+        --color-text-quaternary: #a1a1a6;
+        --color-border: rgba(0, 0, 0, 0.06);
+        --color-bg: #f2f2f7;
+        --color-success: #34c759;
+        --color-danger: #ff3b30;
+        --color-warning: #ff9500;
+        --color-info: #5856d6;
+        --spacing-sm: 8px;
+        --spacing-md: 12px;
+        --spacing-lg: 16px;
+        --spacing-xl: 20px;
+        --spacing-2xl: 24px;
+        --radius-md: 8px;
+        --radius-lg: 12px;
+        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+        --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.06);
+    }
+
+    /* Header */
+    .page-header {
+        margin-bottom: var(--spacing-2xl);
+    }
+
+    .page-header h2 {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--color-text-primary);
+        margin: 0 0 var(--spacing-sm) 0;
+    }
+
+    .page-header p {
+        font-size: 14px;
+        color: var(--color-text-tertiary);
+        margin: 0;
+    }
+
+    /* Section Card */
+    .section-card {
+        background: white;
+        border-radius: var(--radius-lg);
+        border: 0.5px solid var(--color-border);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+        margin-bottom: var(--spacing-2xl);
+        transition: all 0.25s ease;
+    }
+
+    .section-card:hover {
+        box-shadow: var(--shadow-md);
+    }
+
+    .section-header {
+        padding: var(--spacing-xl);
+        background: linear-gradient(to right, rgba(144, 238, 144, 0.05), transparent);
+        border-bottom: 0.5px solid var(--color-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .section-title {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--color-text-primary);
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        margin: 0;
+    }
+
+    .section-title-icon {
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-primary-dark);
+        font-size: 16px;
+    }
+
+    /* Button Styles */
+    .btn-add {
+        padding: 8px 16px;
+        background: var(--color-primary);
+        border: none;
+        border-radius: var(--radius-md);
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--color-text-primary);
+        cursor: pointer;
+        transition: all 0.25s ease;
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        box-shadow: 0 2px 6px rgba(144, 238, 144, 0.25);
+    }
+
+    .btn-add:hover {
+        background: var(--color-primary-dark);
+        box-shadow: 0 4px 12px rgba(144, 238, 144, 0.35);
+        transform: translateY(-1px);
+    }
+
+    .btn-small {
+        padding: 6px 10px;
+        background: transparent;
+        border: none;
+        border-radius: var(--radius-md);
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+    }
+
+    .btn-small:hover {
+        background: var(--color-bg);
+    }
+
+    .btn-edit {
+        color: var(--color-info);
+    }
+
+    .btn-delete {
+        color: var(--color-danger);
+    }
+
+    .btn-save {
+        padding: 6px 12px;
+        background: var(--color-success);
+        color: white;
+        border: none;
+        border-radius: var(--radius-md);
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-save:hover {
+        background: #2ea856;
+    }
+
+    .btn-cancel {
+        padding: 6px 12px;
+        background: var(--color-bg);
+        border: 0.5px solid var(--color-border);
+        border-radius: var(--radius-md);
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--color-text-secondary);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-cancel:hover {
+        background: white;
+        border-color: var(--color-text-tertiary);
+    }
+
+    /* Table Styles */
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    thead {
+        background: linear-gradient(to right, rgba(144, 238, 144, 0.08), transparent);
+        border-bottom: 0.5px solid var(--color-border);
+    }
+
+    th {
+        padding: var(--spacing-lg) var(--spacing-xl);
+        text-align: left;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--color-text-tertiary);
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    td {
+        padding: var(--spacing-lg) var(--spacing-xl);
+        border-bottom: 0.5px solid var(--color-border);
+        font-size: 14px;
+        color: var(--color-text-primary);
+    }
+
+    tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    tbody tr:hover {
+        background: rgba(144, 238, 144, 0.03);
+    }
+
+    /* Form Controls */
+    .form-input,
+    .form-select {
+        width: 100%;
+        padding: 8px 12px;
+        border: 0.5px solid var(--color-border);
+        border-radius: var(--radius-md);
+        font-size: 13px;
+        font-family: inherit;
+        background: white;
+        color: var(--color-text-primary);
+        transition: all 0.2s ease;
+        box-sizing: border-box;
+    }
+
+    .form-input:focus,
+    .form-select:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 2px rgba(144, 238, 144, 0.1);
+    }
+
+    /* Row visibility handlers */
+    .add-row {
+        display: none;
+        background: rgba(52, 199, 89, 0.03);
+    }
+
+    .add-row.show {
+        display: table-row;
+    }
+
+    .edit-row {
+        display: none;
+        background: linear-gradient(to right, rgba(144, 238, 144, 0.04), transparent);
+    }
+
+    .edit-row.show {
+        display: table-row;
+    }
+
+    .view-row.hide {
+        display: none;
+    }
+
+    /* Status Badge */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.2px;
+    }
+
+    .status-active {
+        background: rgba(52, 199, 89, 0.15);
+        color: var(--color-success);
+    }
+
+    .status-pending {
+        background: rgba(255, 149, 0, 0.15);
+        color: var(--color-warning);
+    }
+
+    .status-completed {
+        background: rgba(88, 86, 214, 0.15);
+        color: var(--color-info);
+    }
+
+    /* Code Badge */
+    .code-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 8px;
+        background: var(--color-bg);
+        border-radius: var(--radius-md);
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--color-text-primary);
+    }
+
+    /* Grid Layout */
+    .grid-2 {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-2xl);
+    }
+
+    @media (max-width: 1000px) {
+        .grid-2 {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Actions Column */
+    .actions-cell {
+        display: flex;
+        gap: var(--spacing-sm);
+        justify-content: flex-end;
+        align-items: center;
+    }
+
+    /* Empty State */
+    .empty-state {
+        padding: 48px var(--spacing-xl);
+        text-align: center;
+        color: var(--color-text-quaternary);
+    }
+
+    .empty-state-icon {
+        font-size: 40px;
+        margin-bottom: var(--spacing-lg);
+        opacity: 0.6;
+    }
+
+    .empty-state-text {
+        font-size: 13px;
+    }
+
+    /* Helpers */
+    .fw-semibold {
+        font-weight: 600;
+    }
+
+    .text-end {
+        text-align: right;
+    }
+
+    @media (max-width: 768px) {
+        .page-header h2 {
+            font-size: 22px;
+        }
+
+        .section-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: var(--spacing-lg);
+        }
+
+        th, td {
+            padding: var(--spacing-md) var(--spacing-lg);
+            font-size: 12px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Geographic Logistics Management</h2>
+    <p>Manage electoral administrative boundaries, deployment phases, and operational structures</p>
+</div>
+
+{% if messages %}
+<div style="margin-bottom: var(--spacing-xl);">
+    {% for message in messages %}
+    <div style="padding: var(--spacing-md) var(--spacing-xl); border-radius: var(--radius-md); margin-bottom: var(--spacing-sm); font-size: 14px; font-weight: 600; background: #e2e2e7; color: #1c1c1e; {% if message.tags == 'success' %}background: rgba(52,199,89,0.15); color: var(--color-success);{% elif message.tags == 'warning' or message.tags == 'error' %}background: rgba(255,59,48,0.15); color: var(--color-danger);{% endif %}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="section-card">
+    <div class="section-header">
+        <h3 class="section-title">
+            <span class="section-title-icon">⏱</span>
+            Operational Deployment Phases
+        </h3>
+        <button class="btn-add" onclick="toggleAddRow('phase-add-row')">
+            <span>+</span> Add Phase
+        </button>
+    </div>
+
+    <div class="table-wrapper" style="padding: var(--spacing-xl);">
+        <table>
+            <thead>
+            <tr>
+                <th style="width: 30%;">Phase Name</th>
+                <th style="width: 15%;">Start Date</th>
+                <th style="width: 15%;">End Date</th>
+                <th style="width: 20%;">Status</th>
+                <th style="width: 20%;" class="text-end">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr id="phase-add-row" class="add-row">
+                <form method="post" action="">
+                    {% csrf_token %}
+                    <input type="hidden" name="action_type" value="create_phase">
+                    <td><input type="text" name="name" class="form-input" required placeholder="ECVR I"></td>
+                    <td><input type="date" name="start_date" class="form-input" required></td>
+                    <td><input type="date" name="end_date" class="form-input" required></td>
+                    <td>
+                        <select name="status" class="form-select">
+                            <option value="Pending">Pending</option>
+                            <option value="Active" selected>Active</option>
+                            <option value="Completed">Completed</option>
+                        </select>
+                    </td>
+                    <td class="actions-cell">
+                        <button type="submit" class="btn-save">Save</button>
+                        <button type="button" class="btn-cancel" onclick="toggleAddRow('phase-add-row')">Cancel</button>
+                    </td>
+                </form>
+            </tr>
+
+            {% for phase in phases %}
+            <tr id="phase-view-{{ phase.id }}" class="view-row">
+                <td class="fw-semibold">{{ phase.name }}</td>
+                <td>{{ phase.start_date|date:"M d, Y" }}</td>
+                <td>{{ phase.end_date|date:"M d, Y" }}</td>
+                <td>
+                        <span class="status-badge {% if phase.active %}status-active{% elif phase.status == 'Pending' %}status-pending{% else %}status-completed{% endif %}">
+                            {% if phase.active %}Active{% else %}Completed{% endif %}
+                        </span>
+                </td>
+                <td class="actions-cell">
+                    <button class="btn-small btn-edit" onclick="toggleEditRow('phase', '{{ phase.id }}')" title="Edit">
+                        Edit
+                    </button>
+                    <a href="?delete_type=phase&id={{ phase.id }}" class="btn-small btn-delete" title="Delete"
+                       onclick="return confirm('Delete this phase?')">✕</a>
+                </td>
+            </tr>
+
+            <tr id="phase-edit-{{ phase.id }}" class="edit-row">
+                <form method="post" action="">
+                    {% csrf_token %}
+                    <input type="hidden" name="action_type" value="update_phase">
+                    <input type="hidden" name="entity_id" value="{{ phase.id }}">
+                    <td><input type="text" name="name" class="form-input" value="{{ phase.name }}" required></td>
+                    <td><input type="date" name="start_date" class="form-input"
+                               value="{{ phase.start_date|date:'Y-m-d' }}" required></td>
+                    <td><input type="date" name="end_date" class="form-input" value="{{ phase.end_date|date:'Y-m-d' }}"
+                               required></td>
+                    <td>
+                        <select name="status" class="form-select">
+                            <option value="Active" {% if phase.active %}selected{% endif %}>Active</option>
+                            <option value="Completed" {% if not phase.active %}selected{% endif %}>Completed</option>
+                        </select>
+                    </td>
+                    <td class="actions-cell">
+                        <button type="submit" class="btn-save">Save</button>
+                        <button type="button" class="btn-cancel" onclick="toggleEditRow('phase', '{{ phase.id }}')">
+                            Cancel
+                        </button>
+                    </td>
+                </form>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" style="text-align: center; padding: 40px;">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📂</div>
+                        <div class="empty-state-text">No phases created yet</div>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="grid-2">
+    <div class="section-card">
+        <div class="section-header">
+            <h3 class="section-title">
+                <span class="section-title-icon">🗺</span>
+                Constituencies
+            </h3>
+            <button class="btn-add" onclick="toggleAddRow('const-add-row')">
+                <span>+</span> New
+            </button>
+        </div>
+
+        <div class="table-wrapper" style="padding: var(--spacing-xl);">
+            <table>
+                <thead>
+                <tr>
+                    <th style="width: 50%;">Name</th>
+                    <th style="width: 25%;">Code ID</th>
+                    <th style="width: 25%;" class="text-end">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr id="const-add-row" class="add-row">
+                    <form method="post" action="">
+                        {% csrf_token %}
+                        <input type="hidden" name="action_type" value="create_constituency">
+                        <td><input type="text" name="constituency_name" class="form-input" required placeholder="Turbo">
+                        </td>
+                        <td><input type="number" name="constituency_code" class="form-input" required placeholder="142">
+                        </td>
+                        <td class="actions-cell">
+                            <button type="submit" class="btn-save">Save</button>
+                            <button type="button" class="btn-cancel" onclick="toggleAddRow('const-add-row')">Cancel
+                            </button>
+                        </td>
+                    </form>
+                </tr>
+
+                {% for const in constituencies %}
+                <tr id="const-view-{{ const.id }}" class="view-row">
+                    <td class="fw-semibold">{{ const.name }}</td>
+                    <td><span class="code-badge">{{ const.id }}</span></td>
+                    <td class="actions-cell">
+                        <button class="btn-small btn-edit" onclick="toggleEditRow('const', '{{ const.id }}')">Edit
+                        </button>
+                        <a href="?delete_type=constituency&id={{ const.id }}" class="btn-small btn-delete"
+                           onclick="return confirm('Delete constituency?')">✕</a>
+                    </td>
+                </tr>
+
+                <tr id="const-edit-{{ const.id }}" class="edit-row">
+                    <form method="post" action="">
+                        {% csrf_token %}
+                        <input type="hidden" name="action_type" value="update_constituency">
+                        <input type="hidden" name="entity_id" value="{{ const.id }}">
+                        <td><input type="text" name="name" class="form-input" value="{{ const.name }}" required></td>
+                        <td><input type="number" name="code" class="form-input" value="{{ const.id }}" required></td>
+                        <td class="actions-cell">
+                            <button type="submit" class="btn-save">Save</button>
+                            <button type="button" class="btn-cancel" onclick="toggleEditRow('const', '{{ const.id }}')">
+                                Cancel
+                            </button>
+                        </td>
+                    </form>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" style="text-align: center; padding: 40px;">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📍</div>
+                            <div class="empty-state-text">No constituencies yet</div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="section-card">
+        <div class="section-header">
+            <h3 class="section-title">
+                <span class="section-title-icon">🏛</span>
+                County Wards
+            </h3>
+            <button class="btn-add" onclick="toggleAddRow('ward-add-row')">
+                <span>+</span> New
+            </button>
+        </div>
+
+        <div class="table-wrapper" style="padding: var(--spacing-xl);">
+            <table>
+                <thead>
+                <tr>
+                    <th style="width: 45%;">Name</th>
+                    <th style="width: 30%;">Constituency</th>
+                    <th style="width: 25%;" class="text-end">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr id="ward-add-row" class="add-row">
+                    <form method="post" action="">
+                        {% csrf_token %}
+                        <input type="hidden" name="action_type" value="create_ward">
+                        <td><input type="text" name="name" class="form-input" required placeholder="Kitisuru Ward"></td>
+                        <td>
+                            <select name="constituency_id" class="form-select" required>
+                                <option value="" disabled selected>Select Parent...</option>
+                                {% for const in constituencies %}
+                                <option value="{{ const.id }}">{{ const.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td class="actions-cell">
+                            <button type="submit" class="btn-save">Save</button>
+                            <button type="button" class="btn-cancel" onclick="toggleAddRow('ward-add-row')">Cancel
+                            </button>
+                        </td>
+                    </form>
+                </tr>
+
+                {% for ward in wards %}
+                <tr id="ward-view-{{ ward.id }}" class="view-row">
+                    <td class="fw-semibold">{{ ward.name }}</td>
+                    <td><span class="code-badge">{{ ward.constituency.name }}</span></td>
+                    <td class="actions-cell">
+                        <button class="btn-small btn-edit" onclick="toggleEditRow('ward', '{{ ward.id }}')">Edit
+                        </button>
+                        <a href="?delete_type=ward&id={{ ward.id }}" class="btn-small btn-delete"
+                           onclick="return confirm('Delete ward?')">✕</a>
+                    </td>
+                </tr>
+
+                <tr id="ward-edit-{{ ward.id }}" class="edit-row">
+                    <form method="post" action="">
+                        {% csrf_token %}
+                        <input type="hidden" name="action_type" value="update_ward">
+                        <input type="hidden" name="entity_id" value="{{ ward.id }}">
+                        <td><input type="text" name="name" class="form-input" value="{{ ward.name }}" required></td>
+                        <td>
+                            <span class="code-badge">{{ ward.constituency.name }}</span>
+                            <input type="hidden" name="constituency_id" value="{{ ward.constituency.id }}">
+                        </td>
+                        <td class="actions-cell">
+                            <button type="submit" class="btn-save">Save</button>
+                            <button type="button" class="btn-cancel" onclick="toggleEditRow('ward', '{{ ward.id }}')">
+                                Cancel
+                            </button>
+                        </td>
+                    </form>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" style="text-align: center; padding: 40px;">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🏢</div>
+                            <div class="empty-state-text">No wards yet</div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleAddRow(rowId) {
+        const row = document.getElementById(rowId);
+        row.classList.toggle('show');
+    }
+
+    function toggleEditRow(prefix, id) {
+        const viewRow = document.getElementById(`${prefix}-view-${id}`);
+        const editRow = document.getElementById(`${prefix}-edit-${id}`);
+
+        if (viewRow && editRow) {
+            viewRow.classList.toggle('hide');
+            editRow.classList.toggle('show');
+        }
+    }
+</script>
+{% endblock %}

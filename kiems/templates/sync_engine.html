@@ -1,0 +1,637 @@
+{% extends "superadmin_base.html" %}
+{% block title %}Sync Engine Center | KIEMS Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Design System */
+    :root {
+        --color-primary: #90EE90;
+        --color-primary-dark: #7fe07f;
+        --color-text-primary: #000000;
+        --color-text-secondary: #3a3a3c;
+        --color-text-tertiary: #8e8e93;
+        --color-text-quaternary: #a1a1a6;
+        --color-border: rgba(0, 0, 0, 0.06);
+        --color-bg: #f2f2f7;
+        --color-success: #34c759;
+        --color-danger: #ff3b30;
+        --color-warning: #ff9500;
+        --color-info: #5856d6;
+        --spacing-sm: 8px;
+        --spacing-md: 12px;
+        --spacing-lg: 16px;
+        --spacing-xl: 20px;
+        --spacing-2xl: 24px;
+        --radius-md: 8px;
+        --radius-lg: 12px;
+        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+        --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.06);
+    }
+
+    /* Page Header */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: var(--spacing-2xl);
+    }
+
+    .page-header-content h2 {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--color-text-primary);
+        margin: 0 0 var(--spacing-sm) 0;
+    }
+
+    .page-header-content p {
+        font-size: 14px;
+        color: var(--color-text-tertiary);
+        margin: 0;
+    }
+
+    /* Buttons */
+    .btn-primary {
+        padding: 10px 20px;
+        background: var(--color-primary);
+        border: none;
+        border-radius: var(--radius-md);
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--color-text-primary);
+        cursor: pointer;
+        transition: all 0.25s ease;
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        box-shadow: 0 2px 6px rgba(144, 238, 144, 0.25);
+    }
+
+    .btn-primary:hover {
+        background: var(--color-primary-dark);
+        box-shadow: 0 4px 12px rgba(144, 238, 144, 0.35);
+        transform: translateY(-1px);
+    }
+
+    .btn-small {
+        padding: 6px 12px;
+        background: transparent;
+        border: 0.5px solid var(--color-border);
+        border-radius: var(--radius-md);
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--color-text-secondary);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-small:hover {
+        background: var(--color-bg);
+        border-color: var(--color-primary);
+        color: var(--color-primary-dark);
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: var(--spacing-lg);
+        margin-bottom: var(--spacing-2xl);
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-lg);
+        border: 0.5px solid var(--color-border);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .stat-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--color-text-tertiary);
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .stat-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--color-text-primary);
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+    }
+
+    .stat-unit {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--color-text-tertiary);
+    }
+
+    .stat-detail {
+        font-size: 12px;
+        color: var(--color-text-tertiary);
+        margin-top: var(--spacing-sm);
+    }
+
+    /* Progress Bar */
+    .progress-bar {
+        height: 6px;
+        background: var(--color-bg);
+        border-radius: 3px;
+        margin-top: var(--spacing-md);
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: var(--color-primary);
+        border-radius: 3px;
+        transition: width 0.3s ease;
+    }
+
+    /* Card */
+    .card {
+        background: white;
+        border-radius: var(--radius-lg);
+        border: 0.5px solid var(--color-border);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+        margin-bottom: var(--spacing-2xl);
+    }
+
+    .card-header {
+        padding: var(--spacing-xl);
+        background: linear-gradient(to right, rgba(144, 238, 144, 0.05), transparent);
+        border-bottom: 0.5px solid var(--color-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .card-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--color-text-primary);
+        margin: 0;
+    }
+
+    /* Tabs */
+    .tabs {
+        display: flex;
+        gap: var(--spacing-md);
+        padding: var(--spacing-xl);
+        border-bottom: 0.5px solid var(--color-border);
+    }
+
+    .tab {
+        padding: var(--spacing-md) var(--spacing-lg);
+        background: transparent;
+        border: none;
+        border-bottom: 2px solid transparent;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--color-text-tertiary);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .tab:hover {
+        color: var(--color-text-secondary);
+    }
+
+    .tab.active {
+        color: var(--color-primary-dark);
+        border-bottom-color: var(--color-primary);
+    }
+
+    /* Table */
+    .table-wrapper {
+        overflow-x: auto;
+        padding: var(--spacing-xl);
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    thead {
+        background: linear-gradient(to right, rgba(144, 238, 144, 0.08), transparent);
+        border-bottom: 0.5px solid var(--color-border);
+    }
+
+    th {
+        padding: var(--spacing-lg) var(--spacing-xl);
+        text-align: left;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--color-text-tertiary);
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    td {
+        padding: var(--spacing-lg) var(--spacing-xl);
+        border-bottom: 0.5px solid var(--color-border);
+        font-size: 14px;
+        color: var(--color-text-primary);
+    }
+
+    tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    tbody tr:hover {
+        background: rgba(144, 238, 144, 0.03);
+    }
+
+    /* Status Badge */
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.2px;
+    }
+
+    .badge-synced {
+        background: rgba(52, 199, 89, 0.15);
+        color: var(--color-success);
+    }
+
+    .badge-pending {
+        background: rgba(255, 149, 0, 0.15);
+        color: var(--color-warning);
+    }
+
+    .badge-failed {
+        background: rgba(255, 59, 48, 0.15);
+        color: var(--color-danger);
+    }
+
+    .badge-online {
+        background: rgba(52, 199, 89, 0.15);
+        color: var(--color-success);
+    }
+
+    .badge-error {
+        background: rgba(255, 59, 48, 0.15);
+        color: var(--color-danger);
+    }
+
+    .pulse {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+
+    /* Entry Row */
+    .entry-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+        gap: var(--spacing-lg);
+        padding: var(--spacing-lg);
+        border: 0.5px solid var(--color-border);
+        border-radius: var(--radius-md);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .entry-field {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .entry-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--color-text-tertiary);
+        text-transform: uppercase;
+        letter-spacing: 0.2px;
+    }
+
+    .entry-value {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--color-text-primary);
+    }
+
+    /* Empty State */
+    .empty-state {
+        padding: 48px var(--spacing-xl);
+        text-align: center;
+        color: var(--color-text-quaternary);
+    }
+
+    .empty-state-icon {
+        font-size: 48px;
+        margin-bottom: var(--spacing-lg);
+        opacity: 0.6;
+    }
+
+    .empty-state-text {
+        font-size: 13px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            gap: var(--spacing-lg);
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .entry-row {
+            grid-template-columns: 1fr;
+        }
+
+        table {
+            font-size: 12px;
+        }
+
+        th, td {
+            padding: var(--spacing-md) var(--spacing-lg);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-content">
+        <h2>Sync Engine Center</h2>
+        <p>Monitor and manage IEBC Google Sheet polling and data synchronization</p>
+    </div>
+    <form method="post" action="">
+        {% csrf_token %}
+        <input type="hidden" name="action_type" value="trigger_sync">
+        <button type="submit" class="btn-primary">
+            <span>?</span> Trigger Sync Now
+        </button>
+    </form>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-label">Pending Queue</div>
+        <div class="stat-value">
+            {{ pending_count }}
+            <span class="stat-unit" style="font-size: 12px;">entries</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: {% if total_entries %}{% widthratio pending_count total_entries 100 %}{% else %}0{% endif %}%;"></div>
+        </div>
+        <div class="stat-detail">Waiting to sync</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-label">Synced Today</div>
+        <div class="stat-value">
+            {{ synced_count }}
+            <span class="stat-unit">?</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" style="background: var(--color-success); width: {% if total_entries %}{% widthratio synced_count total_entries 100 %}{% else %}0{% endif %}%;"></div>
+        </div>
+        <div class="stat-detail">Successfully uploaded</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-label">Failed Syncs</div>
+        <div class="stat-value">
+            {{ failed_count }}
+            <span class="stat-unit">??</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" style="background: var(--color-danger); width: {% if total_entries %}{% widthratio failed_count total_entries 100 %}{% else %}0{% endif %}%;"></div>
+        </div>
+        <div class="stat-detail">Need manual attention</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-label">Polling Status</div>
+        <div style="margin-top: 8px;">
+            {% if polling_active %}
+            <span class="badge badge-online">
+                <span class="pulse" style="background: var(--color-success);"></span> Active
+            </span>
+            {% else %}
+            <span class="badge badge-error">
+                <span class="pulse" style="background: var(--color-danger);"></span> Inactive
+            </span>
+            {% endif %}
+        </div>
+        <div class="stat-detail">Last check: {{ last_poll_time|default:"Never" }}</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab(event, 'pending')">Pending Queue</button>
+        <button class="tab" onclick="switchTab(event, 'synced')">Sync History</button>
+        <button class="tab" onclick="switchTab(event, 'failed')">Failed Entries</button>
+        <button class="tab" onclick="switchTab(event, 'logs')">System Logs</button>
+    </div>
+
+    <div id="pending-tab" class="table-wrapper">
+        {% if pending_entries %}
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 15%;">Kit Serial</th>
+                    <th style="width: 15%;">Ward</th>
+                    <th style="width: 20%;">Venue</th>
+                    <th style="width: 12%;">Date</th>
+                    <th style="width: 12%;">Registered</th>
+                    <th style="width: 12%;">Transfers</th>
+                    <th style="width: 14%;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in pending_entries %}
+                <tr id="entry-{{ entry.id }}">
+                    <td><code style="background: var(--color-bg); padding: 4px 8px; border-radius: 4px;">{{ entry.kit_serial }}</code></td>
+                    <td>{{ entry.ward }}</td>
+                    <td>{{ entry.venue }}</td>
+                    <td>{{ entry.entry_date }}</td>
+                    <td><strong>{{ entry.voters }}</strong></td>
+                    <td>{{ entry.transfers|default:"0" }}</td>
+                    <td>
+                        <form method="post" action="" style="display: inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="action_type" value="sync_entry">
+                            <input type="hidden" name="entry_id" value="{{ entry.id }}">
+                            <button type="submit" class="btn-small">Sync Now</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">?</div>
+            <div class="empty-state-text">No pending entries. All entries have been synced.</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div id="synced-tab" class="table-wrapper" style="display: none;">
+        {% if synced_entries %}
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 15%;">Kit Serial</th>
+                    <th style="width: 15%;">Ward</th>
+                    <th style="width: 20%;">Venue</th>
+                    <th style="width: 15%;">Synced Time</th>
+                    <th style="width: 20%;">IEBC Response</th>
+                    <th style="width: 15%;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in synced_entries %}
+                <tr>
+                    <td><code style="background: var(--color-bg); padding: 4px 8px; border-radius: 4px;">{{ entry.kit_serial }}</code></td>
+                    <td>{{ entry.ward }}</td>
+                    <td>{{ entry.venue }}</td>
+                    <td>{{ entry.synced_time|date:"M d, Y H:i" }}</td>
+                    <td style="font-size: 12px; color: var(--color-text-tertiary);">{{ entry.iebc_response|truncatewords:5 }}</td>
+                    <td><span class="badge badge-synced">? Synced</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">?</div>
+            <div class="empty-state-text">No synced entries yet.</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div id="failed-tab" class="table-wrapper" style="display: none;">
+        {% if failed_entries %}
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 15%;">Kit Serial</th>
+                    <th style="width: 15%;">Ward</th>
+                    <th style="width: 20%;">Venue</th>
+                    <th style="width: 20%;">Error Message</th>
+                    <th style="width: 15%;">Attempts</th>
+                    <th style="width: 15%;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in failed_entries %}
+                <tr>
+                    <td><code style="background: var(--color-bg); padding: 4px 8px; border-radius: 4px;">{{ entry.kit_serial }}</code></td>
+                    <td>{{ entry.ward }}</td>
+                    <td>{{ entry.venue }}</td>
+                    <td style="font-size: 12px; color: var(--color-danger);">{{ entry.error_message }}</td>
+                    <td><strong>{{ entry.sync_attempts }}</strong></td>
+                    <td>
+                        <form method="post" action="" style="display: inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="action_type" value="retry_entry">
+                            <input type="hidden" name="entry_id" value="{{ entry.id }}">
+                            <button type="submit" class="btn-small">Retry</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">?</div>
+            <div class="empty-state-text">No failed entries. All syncs are healthy.</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div id="logs-tab" class="table-wrapper" style="display: none;">
+        {% if sync_logs %}
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 20%;">Timestamp</th>
+                    <th style="width: 20%;">Event Type</th>
+                    <th style="width: 35%;">Details</th>
+                    <th style="width: 15%;">Status</th>
+                    <th style="width: 10%;">Duration</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in sync_logs %}
+                <tr>
+                    <td style="font-family: 'Courier New', monospace; font-size: 12px;">{{ log.timestamp|date:"M d, Y H:i:s" }}</td>
+                    <td>{{ log.event_type }}</td>
+                    <td style="font-size: 12px; color: var(--color-text-tertiary);">{{ log.details }}</td>
+                    <td>
+                        {% if log.status == 'success' %}
+                        <span class="badge badge-synced">? Success</span>
+                        {% elif log.status == 'pending' %}
+                        <span class="badge badge-pending">? Pending</span>
+                        {% else %}
+                        <span class="badge badge-failed">? Error</span>
+                        {% endif %}
+                    </td>
+                    <td style="font-size: 12px;">{{ log.duration }}ms</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">?</div>
+            <div class="empty-state-text">No logs available yet.</div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    function switchTab(event, tabName) {
+        // Hide all tabs
+        document.querySelectorAll('[id$="-tab"]').forEach(tab => {
+            tab.style.display = 'none';
+        });
+
+        // Show selected tab
+        document.getElementById(tabName + '-tab').style.display = 'block';
+
+        // Update active tab button
+        document.querySelectorAll('.tab').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.currentTarget.classList.add('active');
+    }
+
+    // Auto-refresh pending queue every 30 seconds
+    setInterval(() => {
+        const pendingCount = document.querySelector('[id$="-tab"] table tbody tr')?.length || 0;
+        if (pendingCount > 0) {
+            console.log('Checking for pending entries...');
+        }
+    }, 30000);
+</script>
+{% endblock %}

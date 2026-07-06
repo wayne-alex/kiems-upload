@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KIEMS Kit Management - Clerk Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+            background: #f8faf8;
+            color: #1a1a1a;
+            min-height: 100vh;
+        }
+
+        /* ============================================
+           LAYOUT STRUCTURE
+           ============================================ */
+        .app-wrapper {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* ============================================
+           SIDEBAR / TOP NAV
+           ============================================ */
+        .sidebar {
+            width: 100%;
+            height: auto;
+            background: white;
+            border-bottom: 1px solid #e2ece2;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 1000;
+        }
+
+        .sidebar-brand {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2e7d32;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar-brand svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .sidebar-nav {
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: white;
+            padding: 16px;
+            border-bottom: 1px solid #e2ece2;
+            z-index: 999;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .sidebar-nav.active {
+            display: flex;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            color: #666;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.2s;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .nav-item svg {
+            width: 20px;
+            height: 20px;
+            stroke-width: 2;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: #f0fbf0;
+            color: #2e7d32;
+        }
+
+        .nav-divider {
+            height: 1px;
+            background: #e2ece2;
+            margin: 8px 0;
+        }
+
+        .nav-logout {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .nav-logout:hover {
+            background: #ffcdd2;
+        }
+
+        .menu-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #2e7d32;
+        }
+
+        .menu-toggle svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .clerk-profile {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f0fbf0;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #333;
+        }
+
+        .clerk-profile svg {
+            width: 16px;
+            height: 16px;
+            color: #2e7d32;
+        }
+
+        /* ============================================
+           MAIN CONTENT
+           ============================================ */
+        .main-content {
+            flex: 1;
+            padding: 16px;
+            width: 100%;
+        }
+
+        .page-header {
+            margin-bottom: 24px;
+        }
+
+        .kit-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .kit-subtitle {
+            font-size: 13px;
+            color: #777;
+        }
+
+        /* ============================================
+           METRIC CARDS
+           ============================================ */
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 16px;
+            border-radius: 10px;
+            border: 1px solid #e1ebe1;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .metric-label {
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 6px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .metric-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: #2e7d32;
+        }
+
+        /* ============================================
+           CONTROLS & SEARCH
+           ============================================ */
+        .controls-section {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .btn-add {
+            background: #2e7d32;
+            color: white;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .btn-add:hover {
+            background: #1b5e20;
+        }
+
+        .btn-add:active {
+            transform: scale(0.98);
+        }
+
+        .btn-add svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbdccb;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #2e7d32;
+            box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.1);
+        }
+
+        /* ============================================
+           TABLE STYLES
+           ============================================ */
+        .table-wrapper {
+            background: transparent;
+            border: none;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            display: none;
+        }
+
+        tbody tr {
+            display: block;
+            background: white;
+            border: 1px solid #e1ebe1;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+        }
+
+        tbody td {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            font-size: 14px;
+            border: none;
+        }
+
+        tbody td::before {
+            content: attr(data-label);
+            font-weight: 600;
+            color: #666;
+            min-width: 80px;
+        }
+
+        tbody td.date-cell {
+            border-bottom: 1px solid #f0f0f0;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: #2e7d32;
+        }
+
+        /* Icon Button Overhauls */
+        .action-btns {
+            display: flex;
+            gap: 6px;
+        }
+
+        .btn-edit, .btn-delete {
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .btn-edit:active, .btn-delete:active {
+            transform: scale(0.95);
+        }
+
+        .btn-edit {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .btn-edit:hover {
+            background: #c8e6c9;
+        }
+
+        .btn-delete {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .btn-delete:hover {
+            background: #ffcdd2;
+        }
+
+        .btn-edit svg, .btn-delete svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* ============================================
+           PAGINATION
+           ============================================ */
+        .pagination-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #e1ebe1;
+        }
+
+        .btn-viewmore {
+            background: #2e7d32;
+            color: white;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .btn-viewmore:hover {
+            background: #1b5e20;
+        }
+
+        .btn-viewmore:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .pagination-info {
+            font-size: 12px;
+            color: #777;
+        }
+
+        /* ============================================
+           MODAL
+           ============================================ */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 16px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-header {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #cbdccb;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #2e7d32;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            padding: 10px;
+            background: #f0f0f0;
+            color: #333;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-save {
+            flex: 1;
+            padding: 10px;
+            background: #2e7d32;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .report-filter-card {
+            background: white;
+            border: 1px solid #e1ebe1;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+        }
+
+        .filter-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #2e7d32;
+        }
+
+        .range-selectors {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        @media (min-width: 576px) {
+            .range-selectors {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .btn-range {
+            background: #f4fbf4;
+            color: #2e7d32;
+            border: 1px solid #cbdccb;
+            padding: 12px 8px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .btn-range:hover {
+            background: #e8f5e9;
+        }
+
+        .btn-range.active {
+            background: #2e7d32;
+            color: white;
+            border-color: #2e7d32;
+        }
+
+        .custom-date-container {
+            display: none;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px dashed #e2ece2;
+        }
+
+        .custom-date-container.active {
+            display: grid;
+        }
+
+        .date-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .date-input-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .date-field {
+            padding: 10px;
+            border: 1px solid #cbdccb;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #333;
+            width: 100%;
+        }
+
+        .btn-generate {
+            background: #2e7d32;
+            color: white;
+            border: none;
+            padding: 14px;
+            width: 100%;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-generate:hover {
+            background: #1b5e20;
+        }
+
+        /* ============================================
+           PREVIEW METRICS
+           ============================================ */
+        .preview-section {
+            display: none;
+        }
+
+        .preview-section.active {
+            display: block;
+        }
+
+        .section-divider {
+            margin: 32px 0 20px 0;
+            border: none;
+            border-top: 1px solid #e1ebe1;
+        }
+
+        .preview-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .preview-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        .export-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-export {
+            background: white;
+            border: 1px solid #cbdccb;
+            color: #333;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-export:hover {
+            background: #f4fbf4;
+            color: #2e7d32;
+        }
+
+        .btn-export svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 16px;
+            border-radius: 10px;
+            border: 1px solid #e1ebe1;
+        }
+
+        .metric-label {
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 6px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .metric-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2e7d32;
+        }
+
+        /* ============================================
+           DATA TABLE
+           ============================================ */
+        .table-wrapper {
+            background: transparent;
+            border: none;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            display: none;
+        }
+
+        tbody tr {
+            display: block;
+            background: white;
+            border: 1px solid #e1ebe1;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        tbody td {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            font-size: 14px;
+        }
+
+        tbody td::before {
+            content: attr(data-label);
+            font-weight: 600;
+            color: #666;
+        }
+
+        tbody td.date-cell {
+            border-bottom: 1px solid #f0f0f0;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: #2e7d32;
+        }
+
+        /* ============================================
+           DESKTOP VIEW REFACTOR (>= 768px)
+           ============================================ */
+        @media (min-width: 768px) {
+            .app-wrapper {
+                flex-direction: row;
+            }
+
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                width: 260px;
+                height: 100vh;
+                flex-direction: column;
+                border-bottom: none;
+                border-right: 1px solid #e2ece2;
+                padding: 32px 24px;
+                justify-content: flex-start;
+                align-items: flex-start;
+                gap: 32px;
+            }
+
+            .menu-toggle {
+                display: none;
+            }
+
+            .sidebar-nav {
+                position: static;
+                width: 100%;
+                height: auto;
+                padding: 0;
+                border: none;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                box-shadow: none;
+            }
+
+            .clerk-profile {
+                margin-top: auto;
+                width: 100%;
+                padding: 12px;
+            }
+
+            .main-content {
+                margin-left: 260px;
+                padding: 40px;
+                max-width: 1200px;
+            }
+
+            .kit-title {
+                font-size: 28px;
+            }
+
+            .controls-section {
+                flex-direction: row;
+                align-items: center;
+                gap: 16px;
+            }
+
+            .btn-add {
+                width: auto;
+            }
+
+            .search-box {
+                flex: 1;
+            }
+
+            .metric-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 16px;
+            }
+
+            .table-wrapper {
+                background: white;
+                border: 1px solid #e1ebe1;
+                border-radius: 10px;
+            }
+
+            thead {
+                display: table-header-group;
+            }
+
+            th {
+                background: #f4fbf4;
+                color: #2e7d32;
+                padding: 14px 16px;
+                text-align: left;
+                font-weight: 600;
+                font-size: 13px;
+                border-bottom: 1px solid #e1ebe1;
+            }
+
+            tbody tr {
+                display: table-row;
+                background: transparent;
+                border-bottom: 1px solid #e1ebe1;
+                padding: 0;
+                margin-bottom: 0;
+                border-radius: 0;
+            }
+
+            tbody tr:hover {
+                background: #fbfdfb;
+            }
+
+            tbody tr:last-child {
+                border-bottom: none;
+            }
+
+            tbody td {
+                display: table-cell;
+                padding: 14px 16px;
+                text-align: left;
+                border: none;
+            }
+
+            tbody td::before {
+                display: none;
+            }
+
+            tbody td.date-cell {
+                border-bottom: none;
+                padding-bottom: 14px;
+                margin-bottom: 0;
+                font-weight: normal;
+                color: inherit;
+            }
+
+            .pagination-controls {
+                justify-content: flex-end;
+                gap: 16px;
+                padding: 16px;
+                border-top: 1px solid #e1ebe1;
+                margin-top: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="app-wrapper">
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="9" y1="9" x2="15" y2="9"></line>
+                <line x1="9" y1="15" x2="15" y2="15"></line>
+            </svg>
+            KIEMS Kit
+        </div>
+
+        <button class="menu-toggle" onclick="toggleMenu()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+
+        <nav class="sidebar-nav" id="sidebarNav">
+            <a class="nav-item active" href="{%  url 'clerk_dashboard' %}" onclick="showSection('home')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                Home
+            </a>
+
+            <a class="nav-item" href="{% url 'clerk_report' %}" onclick="showSection('report')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="2" x2="12" y2="22"></line>
+                    <path d="M17 5H9.5a1.5 1.5 0 0 0 0 3h5a1.5 1.5 0 0 1 0 3h-5a1.5 1.5 0 0 0 0 3h7.5"></path>
+                </svg>
+                Report
+            </a>
+
+            <a class="nav-item" href="{%  url 'clerk_account' %}" onclick="showSection('account')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                Account
+            </a>
+
+            <div class="nav-divider"></div>
+
+            <a class="nav-item nav-logout" href="/logout">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                Sign Out
+            </a>
+        </nav>
+
+        <div class="clerk-profile">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span>Wayne</span>
+        </div>
+    </div>
+
+    {% block content %}{% endblock %}
+</div>
+
+<div id="entryModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header" id="modalTitle">+ Add Entry</div>
+        <form id="logForm">
+            <input type="hidden" id="editRowIndex" value="">
+            <div class="form-group">
+                <label>Date</label>
+                <input type="date" id="formDate" required class="form-input">
+            </div>
+            <div class="form-group">
+                <label>Location</label>
+                <input type="text" id="formVenue" required class="form-input" placeholder="e.g. Turbo Primary School">
+            </div>
+            <div class="form-group">
+                <label>Registered</label>
+                <input type="number" id="formReg" value="0" min="0" required class="form-input">
+            </div>
+            <div class="form-group">
+                <label>Transferred</label>
+                <input type="number" id="formTrans" value="0" min="0" required class="form-input">
+            </div>
+            <div class="form-group">
+                <label>Updated</label>
+                <input type="number" id="formEdit" value="0" min="0" required class="form-input">
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn-save">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const rowsPerPage = 5;
+    let totalRows = 0;
+    let displayedRows = rowsPerPage;
+
+    window.addEventListener('DOMContentLoaded', () => {
+        initDashboard();
+    });
+
+    function initDashboard() {
+        document.getElementById('formDate').value = new Date().toISOString().split('T')[0];
+        totalRows = document.getElementById('tableBody').getElementsByTagName('tr').length;
+        updatePagination();
+        calculateDashboardTotals();
+        hideExtraRows();
+    }
+
+    function toggleMenu() {
+        document.getElementById('sidebarNav').classList.toggle('active');
+    }
+
+    function showSection(section) {
+        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+        if (event && event.target) {
+            const targetItem = event.target.closest('.nav-item');
+            if (targetItem) targetItem.classList.add('active');
+        }
+        document.getElementById('sidebarNav').classList.remove('active');
+    }
+
+    function openModal(title = "+ Add Entry") {
+        document.getElementById('modalTitle').innerText = title;
+        document.getElementById('entryModal').classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('entryModal').classList.remove('active');
+        document.getElementById('logForm').reset();
+        document.getElementById('editRowIndex').value = "";
+        document.getElementById('formDate').value = new Date().toISOString().split('T')[0];
+    }
+
+    function hideExtraRows() {
+        let rows = document.getElementById('tableBody').getElementsByTagName('tr');
+        for (let i = 0; i < rows.length; i++) {
+            if (window.innerWidth >= 768) {
+                rows[i].style.display = i < displayedRows ? 'table-row' : 'none';
+            } else {
+                rows[i].style.display = i < displayedRows ? 'block' : 'none';
+            }
+        }
+    }
+
+    function updatePagination() {
+        document.getElementById('showingCount').innerText = Math.min(displayedRows, totalRows);
+        document.getElementById('totalCount').innerText = totalRows;
+        let btn = document.getElementById('viewmoreBtn');
+        btn.disabled = displayedRows >= totalRows;
+    }
+
+    function loadMoreRows() {
+        displayedRows += rowsPerPage;
+        hideExtraRows();
+        updatePagination();
+        calculateDashboardTotals();
+    }
+
+    function calculateDashboardTotals() {
+        let rows = document.getElementById('tableBody').getElementsByTagName('tr');
+        let reg = 0, trans = 0, edit = 0;
+        for (let i = 0; i < rows.length; i++) {
+            if (rows[i].style.display !== 'none') {
+                reg += parseInt(rows[i].querySelector('.reg-cell')?.innerText || 0);
+                trans += parseInt(rows[i].querySelector('.trans-cell')?.innerText || 0);
+                edit += parseInt(rows[i].querySelector('.edit-cell')?.innerText || 0);
+            }
+        }
+        document.getElementById('topReg').innerText = reg;
+        document.getElementById('topTrans').innerText = trans;
+        document.getElementById('topEdits').innerText = edit;
+    }
+
+    function filterDataLog() {
+        let val = document.getElementById('searchBox').value.toLowerCase();
+        let rows = document.getElementById('tableBody').getElementsByTagName('tr');
+        let visibleCount = 0;
+        displayedRows = rowsPerPage;
+
+        for (let i = 0; i < rows.length; i++) {
+            let date = rows[i].querySelector('.date-cell').textContent.toLowerCase();
+            let venue = rows[i].querySelector('.venue-cell').textContent.toLowerCase();
+            let matches = date.includes(val) || venue.includes(val);
+
+            if (matches && visibleCount < displayedRows) {
+                if (window.innerWidth >= 768) {
+                    rows[i].style.display = 'table-row';
+                } else {
+                    rows[i].style.display = 'block';
+                }
+                visibleCount++;
+            } else {
+                rows[i].style.display = 'none';
+            }
+        }
+        calculateDashboardTotals();
+        updatePagination();
+    }
+
+    function editRow(button) {
+        let row = button.closest('tr');
+        let rows = Array.from(document.getElementById('tableBody').getElementsByTagName('tr'));
+        let index = rows.indexOf(row);
+
+        document.getElementById('editRowIndex').value = index;
+        document.getElementById('formDate').value = row.querySelector('.date-cell').innerText;
+        document.getElementById('formVenue').value = row.querySelector('.venue-cell').innerText;
+        document.getElementById('formReg').value = row.querySelector('.reg-cell').innerText;
+        document.getElementById('formTrans').value = row.querySelector('.trans-cell').innerText;
+        document.getElementById('formEdit').value = row.querySelector('.edit-cell').innerText;
+
+        openModal("Edit Entry");
+    }
+
+    function deleteRow(button) {
+        if (confirm("Are you sure you want to delete this log entry?")) {
+            let row = button.closest('tr');
+            row.remove();
+            totalRows--;
+            calculateDashboardTotals();
+            hideExtraRows();
+            updatePagination();
+        }
+    }
+
+    document.getElementById('logForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        let date = document.getElementById('formDate').value;
+        let venue = document.getElementById('formVenue').value;
+        let reg = document.getElementById('formReg').value;
+        let trans = document.getElementById('formTrans').value;
+        let edit = document.getElementById('formEdit').value;
+        let editIndex = document.getElementById('editRowIndex').value;
+
+        if (editIndex !== "") {
+            let rows = document.getElementById('tableBody').getElementsByTagName('tr');
+            let targetRow = rows[editIndex];
+            targetRow.querySelector('.date-cell').innerText = date;
+            targetRow.querySelector('.venue-cell').innerText = venue;
+            targetRow.querySelector('.reg-cell').innerText = reg;
+            targetRow.querySelector('.trans-cell').innerText = trans;
+            targetRow.querySelector('.edit-cell').innerText = edit;
+        } else {
+            let tbody = document.getElementById('tableBody');
+            let row = tbody.insertRow(0);
+            row.innerHTML = `
+                    <td class="date-cell" data-label="Date">${date}</td>
+                    <td class="venue-cell" data-label="Location">${venue}</td>
+                    <td class="reg-cell" data-label="Registered">${reg}</td>
+                    <td class="trans-cell" data-label="Transferred">${trans}</td>
+                    <td class="edit-cell" data-label="Updated">${edit}</td>
+                    <td data-label="Actions">
+                        <div class="action-btns">
+                            <button class="btn-edit" onclick="editRow(this)" title="Edit">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                            </button>
+                            <button class="btn-delete" onclick="deleteRow(this)" title="Delete">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                            </button>
+                        </div>
+                    </td>
+                `;
+            totalRows++;
+        }
+
+        closeModal();
+        calculateDashboardTotals();
+        hideExtraRows();
+        updatePagination();
+    });
+
+    document.getElementById('entryModal').addEventListener('click', function (e) {
+        if (e.target === this) closeModal();
+    });
+
+    window.addEventListener('resize', hideExtraRows);
+</script>
+</body>
+</html>

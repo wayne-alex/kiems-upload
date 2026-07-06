@@ -1,0 +1,615 @@
+{% extends "RO_base.html" %}
+{% block title %}KIEMS Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Dashboard Container */
+    .dashboard-header {
+        margin-bottom: 32px;
+        padding-bottom: 16px;
+    }
+
+    .dashboard-header h2 {
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+        color: #000000;
+        margin-bottom: 8px;
+    }
+
+    .dashboard-header p {
+        font-size: 15px;
+        color: #8e8e93;
+        margin: 0;
+    }
+
+    .dashboard-subtitle {
+        font-size: 13px;
+        color: #a1a1a6;
+        margin-top: 6px;
+    }
+
+    /* Stats Grid - 4 column layout */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 16px;
+        margin-bottom: 32px;
+    }
+
+    .stat-card {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 20px;
+        border: 0.5px solid rgba(0, 0, 0, 0.08);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: all 0.2s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+
+    .stat-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .stat-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+    }
+
+    .stat-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #8e8e93;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(144, 238, 144, 0.12);
+    }
+
+    .stat-icon svg {
+        width: 20px;
+        height: 20px;
+        color: #7fe07f;
+    }
+
+    .stat-icon.danger {
+        background-color: rgba(255, 59, 48, 0.12);
+    }
+
+    .stat-icon.danger svg {
+        color: #ff3b30;
+    }
+
+    .stat-icon.info {
+        background-color: rgba(88, 86, 214, 0.12);
+    }
+
+    .stat-icon.info svg {
+        color: #5856d6;
+    }
+
+    .stat-value {
+        font-size: 32px;
+        font-weight: 700;
+        color: #000000;
+        letter-spacing: -0.5px;
+        line-height: 1;
+    }
+
+    .stat-value-small {
+        font-size: 12px;
+        color: #8e8e93;
+        font-weight: 500;
+        margin-top: 6px;
+    }
+
+    /* Main Content Grid */
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 24px;
+        margin-bottom: 24px;
+    }
+
+    @media (max-width: 1200px) {
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Card Base Styles */
+    .dashboard-card {
+        background: #ffffff;
+        border-radius: 12px;
+        border: 0.5px solid rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+
+    .card-header {
+        padding: 20px;
+        border-bottom: 0.5px solid rgba(0, 0, 0, 0.06);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .card-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #000000;
+    }
+
+    .card-action {
+        font-size: 13px;
+        color: #7fe07f;
+        text-decoration: none;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        background: none;
+        padding: 0;
+    }
+
+    .card-action:hover {
+        color: #6fd86f;
+    }
+
+    .card-body {
+        padding: 0;
+    }
+
+    /* Data List Styling */
+    .data-list {
+        list-style: none;
+    }
+
+    .data-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+        border-bottom: 0.5px solid rgba(0, 0, 0, 0.06);
+        transition: background 0.15s ease;
+    }
+
+    .data-row:last-child {
+        border-bottom: none;
+    }
+
+    .data-row:hover {
+        background-color: #f9f9fb;
+    }
+
+    .data-primary {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        flex: 1;
+    }
+
+    .data-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #000000;
+    }
+
+    .data-meta {
+        font-size: 12px;
+        color: #8e8e93;
+    }
+
+    .data-metrics {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .metric-badge {
+        font-size: 11px;
+        font-weight: 600;
+        padding: 4px 8px;
+        border-radius: 5px;
+        background: #f2f2f7;
+        border: 0.5px solid rgba(0, 0, 0, 0.06);
+    }
+
+    .metric-badge.new {
+        background: rgba(52, 199, 89, 0.1);
+        color: #34c759;
+        border-color: rgba(52, 199, 89, 0.2);
+    }
+
+    .metric-badge.transferred {
+        background: rgba(88, 86, 214, 0.1);
+        color: #5856d6;
+        border-color: rgba(88, 86, 214, 0.2);
+    }
+
+    .metric-badge.updated {
+        background: rgba(255, 149, 0, 0.1);
+        color: #ff9500;
+        border-color: rgba(255, 149, 0, 0.2);
+    }
+
+    .data-status {
+        text-align: right;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 6px;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 600;
+        gap: 4px;
+    }
+
+    .status-badge.synced {
+        background: rgba(52, 199, 89, 0.15);
+        color: #34c759;
+    }
+
+    .status-badge.pending {
+        background: rgba(255, 149, 0, 0.15);
+        color: #ff9500;
+    }
+
+    .status-badge.failed {
+        background: rgba(255, 59, 48, 0.15);
+        color: #ff3b30;
+    }
+
+    .status-time {
+        font-size: 11px;
+        color: #a1a1a6;
+    }
+
+    /* Empty State */
+    .empty-state {
+        padding: 40px 20px;
+        text-align: center;
+        color: #a1a1a6;
+    }
+
+    .empty-state-icon {
+        font-size: 40px;
+        margin-bottom: 12px;
+    }
+
+    .empty-state-text {
+        font-size: 13px;
+    }
+
+    /* Sync Status Panel */
+    .sync-panel {
+        background: #f9f9fb;
+        padding: 16px 20px;
+        border-bottom: 0.5px solid rgba(0, 0, 0, 0.06);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .sync-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex: 1;
+    }
+
+    .sync-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #34c759;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.5;
+        }
+    }
+
+    .sync-text {
+        font-size: 13px;
+        color: #3a3a3c;
+        font-weight: 500;
+    }
+
+    .btn-action {
+        padding: 8px 16px;
+        background: #90EE90;
+        border: none;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 6px rgba(144, 238, 144, 0.25);
+    }
+
+    .btn-action:hover {
+        background: #7fe07f;
+        box-shadow: 0 4px 10px rgba(144, 238, 144, 0.35);
+    }
+
+    .btn-action:active {
+        transform: scale(0.98);
+    }
+
+    /* Error/Alert Styling */
+    .error-row {
+        background: rgba(255, 59, 48, 0.04);
+    }
+
+    .error-label {
+        font-size: 13px;
+        color: #ff3b30;
+        font-weight: 600;
+    }
+
+    .error-meta {
+        font-size: 11px;
+        color: #a1a1a6;
+        margin-top: 2px;
+    }
+
+    /* Quick Stats Row */
+    .quick-stats {
+        display: flex;
+        gap: 16px;
+        padding: 16px 20px;
+        background: #f9f9fb;
+        border-bottom: 0.5px solid rgba(0, 0, 0, 0.06);
+        flex-wrap: wrap;
+    }
+
+    .quick-stat {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .quick-stat-label {
+        font-size: 11px;
+        color: #8e8e93;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.2px;
+    }
+
+    .quick-stat-value {
+        font-size: 18px;
+        font-weight: 700;
+        color: #000000;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .dashboard-header {
+            margin-bottom: 20px;
+        }
+
+        .dashboard-header h2 {
+            font-size: 22px;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            padding: 16px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+        }
+
+        .dashboard-grid {
+            gap: 16px;
+        }
+    }
+
+    /* Loading skeleton pulse effect */
+    @keyframes shimmer {
+        0% {
+            background-position: -1000px 0;
+        }
+        100% {
+            background-position: 1000px 0;
+        }
+    }
+
+    .loading {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 1000px 100%;
+        animation: shimmer 2s infinite;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Dashboard Header -->
+<div class="dashboard-header">
+    <h2>Analytics Dashboard</h2>
+    <p>Real-time overview of {{ active_phase.name|default:"Election Activity" }}</p>
+    {% if active_phase %}
+    <div class="dashboard-subtitle">
+        Phase: <strong>{{ active_phase.name }}</strong>
+        ({{ active_phase.start_date|date:"M d, Y" }} – {{ active_phase.end_date|date:"M d, Y" }})
+    </div>
+    {% endif %}
+</div>
+
+<!-- Key Metrics Grid -->
+<div class="stats-grid">
+    <!-- Total Registered Users -->
+    <div class="stat-card">
+        <div class="stat-meta">
+            <span class="stat-label">Total Registered</span>
+            <div class="stat-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <polyline points="16 11 18 13 22 9"/>
+                </svg>
+            </div>
+        </div>
+        <div class="stat-value">{{ metrics.total_registered|default:"0"|floatformat:0 }}</div>
+        <div class="stat-value-small">Across {{ active_phase.name|default:"active phase" }}</div>
+    </div>
+
+    <!-- Active KIEMS Kits -->
+    <div class="stat-card">
+        <div class="stat-meta">
+            <span class="stat-label">Active Kits</span>
+            <div class="stat-icon info">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
+                    <line x1="12" y1="18" x2="12.01" y2="18"/>
+                </svg>
+            </div>
+        </div>
+        <div class="stat-value">{{ metrics.active_kits }}</div>
+        <div class="stat-value-small">{{ metrics.inactive_kits }} inactive · {{ metrics.repair_kits }} in repair</div>
+    </div>
+
+
+    <!-- Online Clerks -->
+    <div class="stat-card">
+        <div class="stat-meta">
+            <span class="stat-label">Clerks</span>
+            <div class="stat-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <circle cx="17" cy="9" r="2"/>
+                </svg>
+            </div>
+        </div>
+        <div class="stat-value">{{ metrics.online_clerks }}</div>
+        <div class="stat-value-small">Out of {{ metrics.total_clerks }} registered</div>
+    </div>
+</div>
+
+<!-- Today's Activity Quick Stats -->
+{% if today_activity.new or today_activity.transferred or today_activity.updated %}
+<div class="quick-stats">
+    <div class="quick-stat">
+        <span class="quick-stat-label">📈 New Registered</span>
+        <span class="quick-stat-value">{{ today_activity.new|default:"0"|floatformat:0 }}</span>
+    </div>
+    <div class="quick-stat">
+        <span class="quick-stat-label">🔄 Transferred</span>
+        <span class="quick-stat-value">{{ today_activity.transferred|default:"0"|floatformat:0 }}</span>
+    </div>
+    <div class="quick-stat">
+        <span class="quick-stat-label">✏️ Updated</span>
+        <span class="quick-stat-value">{{ today_activity.updated|default:"0"|floatformat:0 }}</span>
+    </div>
+</div>
+{% endif %}
+
+<!-- Main Dashboard Grid -->
+<div class="dashboard-grid">
+    <!-- Left: Recent Submissions -->
+    <div class="dashboard-card">
+        <div class="card-header">
+            <h3 class="card-title">Recent Submissions</h3>
+            <a href="{% url 'super_admin_submission' %}" class="card-action">View All</a>
+        </div>
+        <div class="card-body">
+            {% if recent_entries %}
+            <div class="data-list">
+                {% for entry in recent_entries %}
+                <div class="data-row">
+                    <div class="data-primary">
+                        <div class="data-label">
+                            {{ entry.kiems_kit.kit_code }}
+                            <span style="color: #8e8e93; font-weight: 500;">({{ entry.kiems_kit.ward.name }})</span>
+                        </div>
+                        <div class="data-metrics">
+                            <span class="metric-badge new">+{{ entry.new_registered }} New</span>
+                            {% if entry.transferred %}
+                            <span class="metric-badge transferred">{{ entry.transferred }} Xfer</span>
+                            {% endif %}
+                            {% if entry.updated %}
+                            <span class="metric-badge updated">{{ entry.updated }} Upd</span>
+                            {% endif %}
+                        </div>
+                        <div class="data-meta">{{ entry.entry_date|date:"M d, Y" }}</div>
+                    </div>
+                    <div class="data-status">
+                        <span class="status-badge {% if entry.is_synced %}synced{% else %}pending{% endif %}">
+                            {% if entry.is_synced %}
+                            ✓ Synced
+                            {% else %}
+                            ⏳ Pending
+                            {% endif %}
+                        </span>
+                        <span class="status-time">{{ entry.created_at|timesince }} ago</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">📋</div>
+                <div class="empty-state-text">No submissions yet</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function triggerSync() {
+        const btn = event.target;
+        btn.disabled = true;
+        btn.textContent = 'Syncing...';
+
+        // Call your sync API endpoint here
+        fetch('/api/sync/trigger/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            }
+        })
+            .then(r => r.json())
+            .then(data => {
+                btn.textContent = 'Sync Complete!';
+                setTimeout(() => location.reload(), 1500);
+            })
+            .catch(err => {
+                btn.textContent = 'Retry';
+                btn.disabled = false;
+            });
+    }
+</script>
+{% endblock %}

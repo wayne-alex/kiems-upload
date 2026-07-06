@@ -1,0 +1,118 @@
+{% extends 'clerk_base.html' %}
+
+{% block content %}
+<main class="main-content">
+    <div class="page-header">
+        <h1 class="kit-title">Account Settings</h1>
+        <p class="kit-subtitle">Manage your profile configurations and secure your credentials</p>
+    </div>
+
+    <div style="max-width: 600px;">
+
+        <div class="report-filter-card" style="margin-bottom: 24px;">
+            <div class="filter-title" style="display: flex; align-items: center; gap: 8px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     style="width: 18px; height: 18px;">
+                    <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                    <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                    <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                    <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                </svg>
+                Assigned Hardware Details
+            </div>
+
+            <div class="custom-date-container active" style="border: none; margin: 0; padding: 0;">
+                <div class="date-input-group" style="width: 100%;">
+                    <label>KIEMS Kit Serial Number (Locked)</label>
+                    <input type="text" value="KT-001-TURBO" readonly class="date-field"
+                           style="background: #f4fbf4; color: #2e7d32; font-family: monospace; font-weight: 700; cursor: not-allowed; border-color: #cbdccb;">
+                </div>
+            </div>
+        </div>
+
+        <div class="report-filter-card" style="margin-bottom: 24px;">
+            <div class="filter-title" style="display: flex; align-items: center; gap: 8px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     style="width: 18px; height: 18px;">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                Identity Information
+            </div>
+
+            <form id="profileForm" onsubmit="handleProfileUpdate(event)">
+                <div class="custom-date-container active"
+                     style="border: none; margin: 0; padding: 0; margin-bottom: 16px;">
+                    <div class="date-input-group" style="width: 100%;">
+                        <label>Clerk Operator Name</label>
+                        <input type="text" id="clerkName" value="John Doe" required class="date-field">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-generate" style="margin-top: 0; width: auto; padding: 12px 24px;">
+                    Save Profile Name
+                </button>
+            </form>
+        </div>
+
+        <div class="report-filter-card">
+            <div class="filter-title" style="display: flex; align-items: center; gap: 8px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     style="width: 18px; height: 18px;">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                Security Access Update
+            </div>
+
+            <form id="passwordForm" onsubmit="handlePasswordUpdate(event)">
+                <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 20px;">
+                    <div class="date-input-group">
+                        <label>Current Password</label>
+                        <input type="password" id="currentPassword" required class="date-field">
+                    </div>
+
+                    <div class="custom-date-container active" style="border: none; margin: 0; padding: 0; gap: 16px;">
+                        <div class="date-input-group">
+                            <label>New Password</label>
+                            <input type="password" id="newPassword" required class="date-field">
+                        </div>
+                        <div class="date-input-group">
+                            <label>Confirm New Password</label>
+                            <input type="password" id="confirmPassword" required class="date-field">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-generate" style="margin-top: 0; width: auto; padding: 12px 24px;">
+                    Update Access Password
+                </button>
+            </form>
+        </div>
+
+    </div>
+</main>
+
+<script>
+    function handleProfileUpdate(event) {
+        event.preventDefault();
+        const updatedName = document.getElementById('clerkName').value;
+        alert(`Success: Identity entry changed to "${updatedName}".`);
+    }
+
+    function handlePasswordUpdate(event) {
+        event.preventDefault();
+        const currentPass = document.getElementById('currentPassword').value;
+        const newPass = document.getElementById('newPassword').value;
+        const confirmPass = document.getElementById('confirmPassword').value;
+
+        if (newPass !== confirmPass) {
+            alert("Security Error: Confirm Password mismatch.");
+            return;
+        }
+
+        alert("Success: Password modification authenticated successfully.");
+        document.getElementById('passwordForm').reset();
+    }
+</script>
+{% endblock %}

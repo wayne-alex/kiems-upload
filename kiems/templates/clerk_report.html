@@ -1,0 +1,206 @@
+{%  extends 'clerk_base.html'  %}
+
+{% block content %}
+<main class="main-content">
+    <div class="page-header">
+        <h1 class="kit-title">Report Generator</h1>
+        <p class="kit-subtitle">Compile and export log summaries for Kit: KT-001-TURBO</p>
+    </div>
+
+    <div class="report-filter-card">
+        <div class="filter-title">Select Report Range</div>
+        <div class="range-selectors">
+            <button class="btn-range active" onclick="setRange('total', this)">Total</button>
+            <button class="btn-range" onclick="setRange('daily', this)">Daily</button>
+            <button class="btn-range" onclick="setRange('weekly', this)">Weekly</button>
+            <button class="btn-range" onclick="setRange('custom', this)">Custom</button>
+        </div>
+
+        <div class="custom-date-container" id="customDateBlock">
+            <div class="date-input-group">
+                <label>Start Date</label>
+                <input type="date" id="startDate" class="date-field">
+            </div>
+            <div class="date-input-group">
+                <label>End Date</label>
+                <input type="date" id="endDate" class="date-field">
+            </div>
+        </div>
+
+        <button class="btn-generate" onclick="generateReportData()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            Generate Report
+        </button>
+    </div>
+
+    <hr class="section-divider">
+
+    <div class="preview-section" id="reportPreview">
+        <div class="preview-header-row">
+            <div class="preview-title" id="reportScopeHeading">Report Preview (Total Scope)</div>
+            <div class="export-actions">
+                <button class="btn-export" onclick="window.print()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 9V2h12v7"></path>
+                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                        <rect x="6" y="14" width="12" height="8"></rect>
+                    </svg>
+                    Print
+                </button>
+                <button class="btn-export" onclick="alert('Exporting CSV raw file format...')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    CSV
+                </button>
+            </div>
+        </div>
+
+        <div class="metric-grid">
+            <div class="metric-card">
+                <div class="metric-label">Aggregated Registered</div>
+                <div class="metric-value" id="summaryReg">0</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Aggregated Transferred</div>
+                <div class="metric-value" id="summaryTrans">0</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Aggregated Updated</div>
+                <div class="metric-value" id="summaryEdits">0</div>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Location Venue</th>
+                    <th>Registered</th>
+                    <th>Transferred</th>
+                    <th>Updated</th>
+                </tr>
+                </thead>
+                <tbody id="reportTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<script>
+    // Mock DB Data log dataset matching initial dashboard configuration
+    const dataLogs = [
+        {date: "2026-06-25", location: "Turbo Primary School", reg: 24, trans: 8, edit: 2},
+        {date: "2026-06-24", location: "Ward Hall", reg: 35, trans: 14, edit: 5},
+        {date: "2026-06-23", location: "Community Center", reg: 28, trans: 10, edit: 3},
+        {date: "2026-06-22", location: "Town Council", reg: 42, trans: 12, edit: 6},
+        {date: "2026-06-21", location: "District Office", reg: 31, trans: 9, edit: 4}
+    ];
+
+    let selectedRangeType = 'total';
+
+    function toggleMenu() {
+        document.getElementById('sidebarNav').classList.toggle('active');
+    }
+
+    function setRange(type, button) {
+        document.querySelectorAll('.btn-range').forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        selectedRangeType = type;
+
+        const customBlock = document.getElementById('customDateBlock');
+        if (type === 'custom') {
+            customBlock.classList.add('active');
+        } else {
+            customBlock.classList.remove('active');
+        }
+    }
+
+    function generateReportData() {
+        let filtered = [];
+        const todayStr = "2026-06-25"; // Relative context application anchoring runtime matching environment data state
+        const today = new Date(todayStr);
+
+        let headingText = "Report Preview (Total)";
+
+        if (selectedRangeType === 'total') {
+            filtered = [...dataLogs];
+            headingText = "Report Preview (Comprehensive Lifetime Scope)";
+        } else if (selectedRangeType === 'daily') {
+            filtered = dataLogs.filter(log => log.date === todayStr);
+            headingText = `Report Preview (Daily: ${todayStr})`;
+        } else if (selectedRangeType === 'weekly') {
+            // Approximate past 7 rolling days from contextual anchor date
+            let validationLimit = new Date(today);
+            validationLimit.setDate(validationLimit.getDate() - 7);
+
+            filtered = dataLogs.filter(log => {
+                let logDate = new Date(log.date);
+                return logDate <= today && logDate >= validationLimit;
+            });
+            headingText = "Report Preview (Rolling Weekly Summary)";
+        } else if (selectedRangeType === 'custom') {
+            let startInput = document.getElementById('startDate').value;
+            let endInput = document.getElementById('endDate').value;
+
+            if (!startInput || !endInput) {
+                alert("Please pick both a Start and End date range option.");
+                return;
+            }
+
+            let dStart = new Date(startInput);
+            let dEnd = new Date(endInput);
+
+            filtered = dataLogs.filter(log => {
+                let dLog = new Date(log.date);
+                return dLog >= dStart && dLog <= dEnd;
+            });
+            headingText = `Report Preview (${startInput} to ${endInput})`;
+        }
+
+        // Calculations metrics
+        let totalReg = 0, totalTrans = 0, totalEdit = 0;
+        let tbodyContent = "";
+
+        filtered.forEach(log => {
+            totalReg += log.reg;
+            totalTrans += log.trans;
+            totalEdit += log.edit;
+
+            tbodyContent += `
+                    <tr>
+                        <td class="date-cell" data-label="Date">${log.date}</td>
+                        <td data-label="Location">${log.location}</td>
+                        <td data-label="Registered">${log.reg}</td>
+                        <td data-label="Transferred">${log.trans}</td>
+                        <td data-label="Updated">${log.edit}</td>
+                    </tr>
+                `;
+        });
+
+        if (filtered.length === 0) {
+            tbodyContent = `<tr><td colspan="5" style="text-align:center; padding:24px; color:#888;">No system data entries matched within chosen time boundaries.</td></tr>`;
+        }
+
+        // DOM Rendering Updates
+        document.getElementById('reportScopeHeading').innerText = headingText;
+        document.getElementById('summaryReg').innerText = totalReg;
+        document.getElementById('summaryTrans').innerText = totalTrans;
+        document.getElementById('summaryEdits').innerText = totalEdit;
+        document.getElementById('reportTableBody').innerHTML = tbodyContent;
+
+        // Make Preview Visible
+        document.getElementById('reportPreview').classList.add('active');
+    }
+</script>
+{% endblock %}

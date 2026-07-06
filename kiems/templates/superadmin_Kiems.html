@@ -1,0 +1,769 @@
+{% extends "superadmin_base.html" %}
+{% block title %}KIEMS Kit Inventory | KIEMS Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Design System */
+    :root {
+        --color-primary: #90EE90;
+        --color-primary-dark: #7fe07f;
+        --color-text-primary: #000000;
+        --color-text-secondary: #3a3a3c;
+        --color-text-tertiary: #8e8e93;
+        --color-text-quaternary: #a1a1a6;
+        --color-border: rgba(0, 0, 0, 0.06);
+        --color-bg: #f2f2f7;
+        --color-success: #34c759;
+        --color-danger: #ff3b30;
+        --color-warning: #ff9500;
+        --color-info: #5856d6;
+        --spacing-sm: 8px;
+        --spacing-md: 12px;
+        --spacing-lg: 16px;
+        --spacing-xl: 20px;
+        --spacing-2xl: 24px;
+        --radius-md: 8px;
+        --radius-lg: 12px;
+        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+        --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.06);
+    }
+
+    /* Page Header */
+    .page-header {
+        margin-bottom: var(--spacing-2xl);
+    }
+
+    .page-header h2 {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--color-text-primary);
+        margin: 0 0 var(--spacing-sm) 0;
+    }
+
+    .page-header p {
+        font-size: 14px;
+        color: var(--color-text-tertiary);
+        margin: 0;
+    }
+
+    .page-actions {
+        display: flex;
+        gap: var(--spacing-lg);
+        margin-bottom: var(--spacing-2xl);
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: var(--spacing-lg);
+        margin-bottom: var(--spacing-2xl);
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-lg);
+        border: 0.5px solid var(--color-border);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .stat-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--color-text-tertiary);
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .stat-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--color-text-primary);
+    }
+
+    .stat-detail {
+        font-size: 12px;
+        color: var(--color-text-tertiary);
+        margin-top: var(--spacing-sm);
+    }
+
+    /* Filter Tabs */
+    .filter-tabs {
+        display: flex;
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-2xl);
+        border-bottom: 0.5px solid var(--color-border);
+        padding-bottom: var(--spacing-lg);
+    }
+
+    .filter-tab {
+        padding: var(--spacing-md) var(--spacing-lg);
+        background: transparent;
+        border: none;
+        border-bottom: 2px solid transparent;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--color-text-tertiary);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .filter-tab:hover {
+        color: var(--color-text-secondary);
+    }
+
+    .filter-tab.active {
+        color: var(--color-primary-dark);
+        border-bottom-color: var(--color-primary);
+    }
+
+    /* Card Container */
+    .card {
+        background: white;
+        border-radius: var(--radius-lg);
+        border: 0.5px solid var(--color-border);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+        margin-bottom: var(--spacing-2xl);
+    }
+
+    .card-header {
+        padding: var(--spacing-xl);
+        background: linear-gradient(to right, rgba(144, 238, 144, 0.05), transparent);
+        border-bottom: 0.5px solid var(--color-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .card-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--color-text-primary);
+        margin: 0;
+    }
+
+    /* Buttons */
+    .btn-primary {
+        padding: 10px 20px;
+        background: var(--color-primary);
+        border: none;
+        border-radius: var(--radius-md);
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--color-text-primary);
+        cursor: pointer;
+        transition: all 0.25s ease;
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        box-shadow: 0 2px 6px rgba(144, 238, 144, 0.25);
+    }
+
+    .btn-primary:hover {
+        background: var(--color-primary-dark);
+        box-shadow: 0 4px 12px rgba(144, 238, 144, 0.35);
+        transform: translateY(-1px);
+    }
+
+    .btn-small {
+        padding: 6px 10px;
+        background: transparent;
+        border: none;
+        border-radius: var(--radius-md);
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-small:hover {
+        background: var(--color-bg);
+    }
+
+    /* Table */
+    .table-wrapper {
+        overflow-x: auto;
+        padding: var(--spacing-xl);
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    thead {
+        background: linear-gradient(to right, rgba(144, 238, 144, 0.08), transparent);
+        border-bottom: 0.5px solid var(--color-border);
+    }
+
+    th {
+        padding: var(--spacing-lg) var(--spacing-xl);
+        text-align: left;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--color-text-tertiary);
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    td {
+        padding: var(--spacing-lg) var(--spacing-xl);
+        border-bottom: 0.5px solid var(--color-border);
+        font-size: 14px;
+        color: var(--color-text-primary);
+    }
+
+    tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    tbody tr:hover {
+        background: rgba(144, 238, 144, 0.03);
+    }
+
+    /* Kit Info */
+    .kit-code {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        background: var(--color-bg);
+        border-radius: var(--radius-md);
+        font-family: 'Courier New', monospace;
+        font-weight: 700;
+        color: var(--color-text-primary);
+        font-size: 13px;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.2px;
+    }
+
+    .status-active {
+        background: rgba(52, 199, 89, 0.15);
+        color: var(--color-success);
+    }
+
+    .status-inactive {
+        background: rgba(255, 59, 48, 0.15);
+        color: var(--color-danger);
+    }
+
+    .status-repair {
+        background: rgba(255, 149, 0, 0.15);
+        color: var(--color-warning);
+    }
+
+    .status-unallocated {
+        background: rgba(88, 86, 214, 0.15);
+        color: var(--color-info);
+    }
+
+    /* Allocation Badge */
+    .allocation-badge {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        padding: 4px 10px;
+        background: var(--color-bg);
+        border-radius: 6px;
+        font-size: 12px;
+        color: var(--color-text-tertiary);
+    }
+
+    .allocation-badge.allocated {
+        background: rgba(52, 199, 89, 0.1);
+        color: var(--color-success);
+    }
+
+    /* Forms */
+    .form-input,
+    .form-select {
+        width: 100%;
+        padding: 10px 12px;
+        border: 0.5px solid var(--color-border);
+        border-radius: var(--radius-md);
+        font-size: 13px;
+        font-family: inherit;
+        background: white;
+        color: var(--color-text-primary);
+        transition: all 0.2s ease;
+    }
+
+    .form-input:focus,
+    .form-select:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 2px rgba(144, 238, 144, 0.1);
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .form-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--color-text-primary);
+    }
+
+    /* Modal */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(2px);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .modal-overlay.active {
+        display: flex;
+    }
+
+    .modal-content {
+        background: white;
+        border-radius: var(--radius-lg);
+        width: 90%;
+        max-width: 500px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    }
+
+    .modal-header {
+        padding: var(--spacing-xl);
+        border-bottom: 0.5px solid var(--color-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-header h3 {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--color-text-primary);
+        margin: 0;
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: var(--color-text-tertiary);
+        padding: 0;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius-md);
+        transition: all 0.2s ease;
+    }
+
+    .modal-close:hover {
+        background: var(--color-bg);
+        color: var(--color-text-primary);
+    }
+
+    .modal-body {
+        padding: var(--spacing-xl);
+    }
+
+    .modal-footer {
+        padding: var(--spacing-xl);
+        border-top: 0.5px solid var(--color-border);
+        display: flex;
+        gap: var(--spacing-lg);
+        justify-content: flex-end;
+    }
+
+    /* Empty State */
+    .empty-state {
+        padding: 48px var(--spacing-xl);
+        text-align: center;
+        color: var(--color-text-quaternary);
+    }
+
+    .empty-state-icon {
+        font-size: 48px;
+        margin-bottom: var(--spacing-lg);
+        opacity: 0.6;
+    }
+
+    .empty-state-text {
+        font-size: 13px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-header h2 {
+            font-size: 22px;
+        }
+
+        .page-actions {
+            flex-direction: column;
+        }
+
+        .filter-tabs {
+            overflow-x: auto;
+            flex-wrap: nowrap;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        table {
+            font-size: 12px;
+        }
+
+        th, td {
+            padding: var(--spacing-md) var(--spacing-lg);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <h2>KIEMS Kit Inventory Management</h2>
+    <p>Create, track, and allocate KIEMS voting devices to constituencies and wards</p>
+</div>
+
+<!-- Action Buttons -->
+<div class="page-actions">
+    <button class="btn-primary" onclick="openCreateModal()">
+        <span>+</span> Create New Kit
+    </button>
+</div>
+
+<!-- Statistics -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-label">Total Kits</div>
+        <div class="stat-value">{{ kits|length }}</div>
+        <div class="stat-detail">All devices in inventory</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Allocated</div>
+        <div class="stat-value">{{ allocated_count }}</div>
+        <div class="stat-detail">Assigned to wards</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Unallocated</div>
+        <div class="stat-value">{{ unallocated_count }}</div>
+        <div class="stat-detail">Awaiting allocation</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Active Status</div>
+        <div class="stat-value">{{ active_count }}</div>
+        <div class="stat-detail">Currently operational</div>
+    </div>
+</div>
+
+<!-- Filter Tabs -->
+<div class="filter-tabs">
+    <button class="filter-tab active" onclick="filterKits('all')">All Kits</button>
+    <button class="filter-tab" onclick="filterKits('unallocated')">Unallocated</button>
+    <button class="filter-tab" onclick="filterKits('allocated')">Allocated</button>
+    <button class="filter-tab" onclick="filterKits('active')">Active</button>
+</div>
+
+<!-- Kits Table -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Device Registry</h3>
+    </div>
+
+    <div class="table-wrapper">
+        {% if kits %}
+        <table id="kitsTable">
+            <thead>
+            <tr>
+                <th style="width: 15%;">Kit Code</th>
+                <th style="width: 18%;">Serial Number</th>
+                <th style="width: 15%;">Status</th>
+                <th style="width: 18%;">Allocation</th>
+                <th style="width: 15%;">Assigned Clerk</th>
+                <th style="width: 19%;">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for kit in kits %}
+            <tr class="kit-row" data-status="{{ kit.status }}"
+                data-allocated="{% if kit.ward %}yes{% else %}no{% endif %}">
+                <td>
+                    <span class="kit-code">{{ kit.kit_code }}</span>
+                </td>
+                <td>
+                    <div style="font-family: 'Courier New', monospace; font-size: 12px;">
+                        {{ kit.serial_number }}
+                    </div>
+                </td>
+                <td>
+                        <span class="status-badge status-{{ kit.status|lower }}">
+                            {% if kit.status == 'active' %}✓ Active
+                            {% elif kit.status == 'inactive' %}✗ Inactive
+                            {% else %}⚙️ In Repair
+                            {% endif %}
+                        </span>
+                </td>
+                <td>
+                    {% if kit.ward %}
+                    <div class="allocation-badge allocated">
+                        <span>📍</span>
+                        <span>{{ kit.ward.name }}</span>
+                    </div>
+                    <div style="font-size: 11px; color: var(--color-text-tertiary); margin-top: 4px;">
+                        {{ kit.constituency.name }}
+                    </div>
+                    {% else %}
+                    <span class="status-badge status-unallocated">🔵 Unallocated</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if kit.assigned_clerk %}
+                    <div style="font-size: 13px;">
+                        {{ kit.assigned_clerk.get_full_name|default:kit.assigned_clerk.username }}
+                    </div>
+                    <div style="font-size: 11px; color: var(--color-text-tertiary);">
+                        {{ kit.assigned_clerk.get_role_display }}
+                    </div>
+                    {% else %}
+                    <span style="color: var(--color-text-quaternary);">Not assigned</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                        {% if not kit.ward %}
+                        <button class="btn-small" onclick="openAllocateModal({{ kit.id }})" title="Allocate">📍</button>
+                        {% else %}
+                        <button class="btn-small" onclick="openAllocateModal({{ kit.id }})" title="Reallocate">🔄
+                        </button>
+                        {% endif %}
+                        <button class="btn-small" onclick="editKit({{ kit.id }})" title="Edit">✏️</button>
+                        <a href="?delete_type=kit&id={{ kit.id }}" class="btn-small" title="Delete"
+                           onclick="return confirm('Delete this kit?')">🗑️</a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">📱</div>
+            <div class="empty-state-text">No kits created yet. Create your first kit to get started.</div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Create Kit Modal -->
+<div class="modal-overlay" id="createModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Create New KIEMS Kit</h3>
+            <button class="modal-close" onclick="closeModal('createModal')">×</button>
+        </div>
+
+        <form method="post" action="">
+            {% csrf_token %}
+            <input type="hidden" name="action_type" value="create_kit">
+
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Kit Code *</label>
+                    <input type="text" name="kit_code" class="form-input" required placeholder="e.g. KIT-B0291">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Serial Number (IMEI/MAC) *</label>
+                    <input type="text" name="serial_number" class="form-input" required
+                           placeholder="e.g. 863452109841253">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Deployment Date *</label>
+                    <input type="date" name="date_deployed" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="active" selected>Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="in_repair">In Repair</option>
+                    </select>
+                </div>
+
+                <div style="padding: 12px; background: rgba(88, 86, 214, 0.05); border-radius: 8px; margin-top: 16px;">
+                    <div style="font-size: 12px; color: var(--color-text-tertiary); font-weight: 600;">
+                        ℹ️ You can allocate this kit to a ward and assign a clerk later.
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-primary" onclick="closeModal('createModal')"
+                        style="background: var(--color-bg); color: var(--color-text-secondary); box-shadow: none;">
+                    Cancel
+                </button>
+                <button type="submit" class="btn-primary">Create Kit</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Allocate Kit Modal -->
+<div class="modal-overlay" id="allocateModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Allocate KIEMS Kit</h3>
+            <button class="modal-close" onclick="closeModal('allocateModal')">×</button>
+        </div>
+
+        <form method="post" action="">
+            {% csrf_token %}
+            <input type="hidden" name="action_type" value="allocate_kit">
+            <input type="hidden" name="kit_id" id="allocateKitId">
+
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Constituency *</label>
+                    <select name="constituency_id" class="form-select" id="constituencySelect" required
+                            onchange="loadWards()">
+                        <option value="">Select constituency...</option>
+                        {% for const in constituencies %}
+                        <option value="{{ const.id }}">{{ const.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Ward *</label>
+                    <select name="ward_id" class="form-select" id="wardSelect" required>
+                        <option value="">Select ward...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Assigned Clerk (Optional)</label>
+                    <select name="assigned_clerk_id" class="form-select">
+                        <option value="">No clerk assigned</option>
+                        {% for clerk in clerks %}
+                        <option value="{{ clerk.id }}">{{ clerk.get_full_name|default:clerk.username }} ({{
+                            clerk.get_role_display }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-primary" onclick="closeModal('allocateModal')"
+                        style="background: var(--color-bg); color: var(--color-text-secondary); box-shadow: none;">
+                    Cancel
+                </button>
+                <button type="submit" class="btn-primary">Allocate Kit</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script id="wards-json" type="application/json">
+[
+    {% for ward in wards %}
+    {
+        "id": "{{ ward.id }}",
+        "name": "{{ ward.name|escapejs }}",
+        "constituency_id": "{{ ward.constituency.id }}"
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+]
+</script>
+<script>
+
+    function openCreateModal() {
+        document.getElementById('createModal').classList.add('active');
+    }
+
+    function openAllocateModal(kitId) {
+        document.getElementById('allocateKitId').value = kitId;
+        document.getElementById('allocateModal').classList.add('active');
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).classList.remove('active');
+    }
+
+    function editKit(kitId) {
+        alert('Edit kit ' + kitId);
+    }
+
+    function filterKits(type) {
+        document.querySelectorAll('.filter-tab').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+
+        document.querySelectorAll('.kit-row').forEach(row => {
+            let show = true;
+            if (type === 'unallocated') show = row.dataset.allocated === 'no';
+            if (type === 'allocated') show = row.dataset.allocated === 'yes';
+            if (type === 'active') show = row.dataset.status === 'active';
+            row.style.display = show ? '' : 'none';
+        });
+    }
+
+    const allWards = JSON.parse(document.getElementById('wards-json').textContent);
+
+    function loadWards() {
+        const constituencySelect = document.getElementById('constituencySelect');
+        const wardSelect = document.getElementById('wardSelect');
+        const selectedConstituencyId = constituencySelect.value;
+
+        // Reset the ward dropdown menu
+        wardSelect.innerHTML = '<option value="">Select ward...</option>';
+
+        if (!selectedConstituencyId) {
+            return; // Stop here if no constituency is highlighted
+        }
+
+        // Filter wards that belong to our selected constituency
+        const filteredWards = allWards.filter(ward => ward.constituency_id === selectedConstituencyId);
+
+        // Build and append new option nodes
+        filteredWards.forEach(ward => {
+            const option = document.createElement('option');
+            option.value = ward.id;
+            option.textContent = ward.name;
+            wardSelect.appendChild(option);
+        });
+    }
+
+    // Close modal on overlay click
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+        modal.addEventListener('click', function (e) {
+            if (e.target === this) closeModal(this.id);
+        });
+    });
+</script>
+{% endblock %}
